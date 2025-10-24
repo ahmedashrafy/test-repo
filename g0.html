@@ -608,6 +608,44 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: CTA Button Styling */
+.md-header__cta {
+  display: flex;
+  align-items: center;
+  margin-left: 0.8rem;
+}
+
+.md-header__cta .md-button {
+  font-size: 0.7rem;
+  padding: 0.5em 1.2em;
+  border-radius: 0.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  transition: background-color 0.25s, color 0.25s, box-shadow 0.25s;
+  white-space: nowrap;
+}
+
+.md-header__cta .md-button--primary {
+  background-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.md-header__cta .md-button--primary:hover,
+.md-header__cta .md-button--primary:focus {
+  background-color: var(--md-primary-fg-color--dark);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  transform: translateY(-1px);
+}
+
+@media screen and (max-width: 76.234375em) {
+  .md-header__cta {
+    display: none;
+  }
+}
   </style>
  </head>
  <body dir="ltr">
@@ -685,6 +723,16 @@
         </li>
        </ul>
       </div>
+     </a>
+    </div>
+    <!-- A/B Test: CTA Button (Variant B) -->
+    <div id="cta-button-container" class="md-header__cta" style="display: none;">
+     <a href="https://github.com/crosschain-risk-framework/crosschain-risk-framework/issues"
+        id="contribute-cta-button"
+        class="md-button md-button--primary"
+        target="_blank"
+        rel="noopener">
+      Contribute to Framework
      </a>
     </div>
    </nav>
@@ -987,5 +1035,161 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: CTA Button Test Script -->
+  <script>
+    (function() {
+      'use strict';
+
+      // A/B Test Configuration
+      var AB_TEST_CONFIG = {
+        testName: 'call-to-action-button-test',
+        storageKey: 'cta_button_ab_test_variant',
+        variants: {
+          A: 'control',      // No button (existing header)
+          B: 'treatment'     // CTA button visible
+        }
+      };
+
+      /**
+       * Get or assign A/B test variant for the user
+       * Uses localStorage to persist variant assignment across sessions
+       */
+      function getOrAssignVariant() {
+        var stored = localStorage.getItem(AB_TEST_CONFIG.storageKey);
+
+        if (stored && (stored === 'A' || stored === 'B')) {
+          return stored;
+        }
+
+        // Randomly assign variant (50/50 split)
+        var variant = Math.random() < 0.5 ? 'A' : 'B';
+        localStorage.setItem(AB_TEST_CONFIG.storageKey, variant);
+
+        return variant;
+      }
+
+      /**
+       * Track A/B test events to localStorage
+       * In production, this would send data to an analytics service
+       */
+      function trackEvent(eventType, eventData) {
+        var timestamp = new Date().toISOString();
+        var event = {
+          testName: AB_TEST_CONFIG.testName,
+          eventType: eventType,
+          timestamp: timestamp,
+          data: eventData || {}
+        };
+
+        // Store event in localStorage (in production, send to analytics service)
+        var events = JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+        events.push(event);
+        localStorage.setItem('ab_test_events', JSON.stringify(events));
+
+        // Log to console for debugging
+        console.log('[A/B Test]', eventType, event);
+
+        return event;
+      }
+
+      /**
+       * Initialize the A/B test
+       */
+      function initABTest() {
+        var variant = getOrAssignVariant();
+
+        // Track variant assignment
+        trackEvent('variant_assigned', {
+          variant: variant,
+          variantName: AB_TEST_CONFIG.variants[variant]
+        });
+
+        // Show CTA button for variant B
+        if (variant === 'B') {
+          var ctaContainer = document.getElementById('cta-button-container');
+          if (ctaContainer) {
+            ctaContainer.style.display = 'flex';
+
+            // Track button impressions
+            trackEvent('button_impression', {
+              variant: variant
+            });
+          }
+
+          // Add click event listener for tracking
+          var ctaButton = document.getElementById('contribute-cta-button');
+          if (ctaButton) {
+            ctaButton.addEventListener('click', function(e) {
+              // Track button click (success metric)
+              trackEvent('button_click', {
+                variant: variant,
+                targetUrl: ctaButton.href,
+                timestamp: new Date().toISOString()
+              });
+            });
+          }
+        } else {
+          // Variant A: Control group - no button shown
+          trackEvent('control_impression', {
+            variant: variant
+          });
+        }
+
+        // Track page view with variant info
+        trackEvent('page_view', {
+          variant: variant,
+          url: window.location.href,
+          userAgent: navigator.userAgent
+        });
+      }
+
+      /**
+       * Utility function to retrieve A/B test results
+       * Can be called from browser console: getABTestResults()
+       */
+      window.getABTestResults = function() {
+        var events = JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+        var variant = localStorage.getItem(AB_TEST_CONFIG.storageKey);
+
+        var results = {
+          currentVariant: variant,
+          testName: AB_TEST_CONFIG.testName,
+          totalEvents: events.length,
+          eventsByType: {},
+          events: events
+        };
+
+        // Group events by type
+        events.forEach(function(event) {
+          var type = event.eventType;
+          if (!results.eventsByType[type]) {
+            results.eventsByType[type] = [];
+          }
+          results.eventsByType[type].push(event);
+        });
+
+        console.table(results.eventsByType);
+        return results;
+      };
+
+      /**
+       * Utility function to reset A/B test (for testing purposes)
+       * Can be called from browser console: resetABTest()
+       */
+      window.resetABTest = function() {
+        localStorage.removeItem(AB_TEST_CONFIG.storageKey);
+        localStorage.removeItem('ab_test_events');
+        console.log('[A/B Test] Reset complete. Reload page to get new variant.');
+      };
+
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initABTest);
+      } else {
+        initABTest();
+      }
+    })();
+  </script>
  </body>
 </html>
