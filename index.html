@@ -2,10 +2,127 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=g0.html">
+    <meta http-equiv="refresh" content="0; url=g0.html" id="redirect-meta">
     <title>Redirecting...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .loading-container {
+            text-align: center;
+            display: none;
+        }
+        .loading-container.show {
+            display: block;
+        }
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+        .tagline {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in 0.3s forwards;
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in 0.6s forwards, spin 1s linear 0.6s infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        .redirect-link {
+            margin-top: 20px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in 0.9s forwards;
+        }
+        .redirect-link a {
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        // A/B Test Configuration: redirect-delay-test
+        // Variant A: Immediate redirect (0 seconds)
+        // Variant B: Delayed redirect (2 seconds) with branded loading message
+
+        (function() {
+            // Simple A/B test assignment based on random selection
+            // In production, this could be replaced with a more sophisticated system
+            // that tracks variants in localStorage or uses a consistent hash of user ID
+
+            function getABTestVariant() {
+                // Check if variant is already stored in sessionStorage
+                var storedVariant = sessionStorage.getItem('redirect-delay-test-variant');
+                if (storedVariant) {
+                    return storedVariant;
+                }
+
+                // Randomly assign variant (50/50 split)
+                var variant = Math.random() < 0.5 ? 'A' : 'B';
+                sessionStorage.setItem('redirect-delay-test-variant', variant);
+
+                // Log variant for analytics (in production, send to analytics service)
+                console.log('A/B Test: redirect-delay-test, Variant:', variant);
+
+                return variant;
+            }
+
+            var variant = getABTestVariant();
+            var redirectMeta = document.getElementById('redirect-meta');
+
+            if (variant === 'B') {
+                // Variant B: 2-second delay with branded loading message
+                redirectMeta.setAttribute('content', '2; url=g0.html');
+
+                // Show loading UI after DOM is ready
+                document.addEventListener('DOMContentLoaded', function() {
+                    var loadingContainer = document.querySelector('.loading-container');
+                    if (loadingContainer) {
+                        loadingContainer.classList.add('show');
+                    }
+                });
+            }
+            // Variant A: Keep default 0-second redirect (no changes needed)
+        })();
+    </script>
 </head>
 <body>
-    <p>Redirecting to <a href="g0.html">g0.html</a>...</p>
+    <!-- Loading UI for Variant B -->
+    <div class="loading-container">
+        <div class="logo">Crosschain Risk Framework</div>
+        <div class="tagline">Securing the multichain future</div>
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Fallback link (visible in both variants) -->
+    <div class="redirect-link">
+        <p>Redirecting to <a href="g0.html">Crosschain Risk Framework</a>...</p>
+    </div>
 </body>
 </html>
