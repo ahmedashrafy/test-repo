@@ -608,6 +608,54 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* ===================================================================
+   A/B TEST: search-box-prominence
+   Description: Test increasing the visibility of the search functionality
+   Variants:
+   - A (control): Current default styling
+   - B (enhanced): Larger, more prominent search box with improved visibility
+   =================================================================== */
+
+/* Variant B: Enhanced Search Box Styling */
+body.ab-test-search-box-prominence-b .md-search__input {
+  font-size: 1.1rem !important;
+  padding: 0.8rem 3.6rem 0.8rem 2.4rem !important;
+  border: 2px solid rgba(68, 138, 255, 0.3) !important;
+  border-radius: 0.3rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+body.ab-test-search-box-prominence-b .md-search__input::placeholder {
+  color: var(--md-default-fg-color--light) !important;
+  opacity: 0.8 !important;
+}
+
+body.ab-test-search-box-prominence-b .md-search__input:focus,
+body.ab-test-search-box-prominence-b .md-search__input:hover {
+  border-color: rgba(68, 138, 255, 0.6) !important;
+  box-shadow: 0 4px 12px rgba(68, 138, 255, 0.2) !important;
+}
+
+body.ab-test-search-box-prominence-b .md-search__form {
+  height: 3rem !important;
+}
+
+@media screen and (min-width:60em) {
+  body.ab-test-search-box-prominence-b .md-search__form {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 0.3rem !important;
+    height: 2.8rem !important;
+  }
+
+  body.ab-test-search-box-prominence-b .md-search__form:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
+/* Variant A: Control - uses default styling (no additional CSS needed) */
+
   </style>
  </head>
  <body dir="ltr">
@@ -649,7 +697,7 @@
      </label>
      <div class="md-search__inner" role="search">
       <form class="md-search__form" name="search">
-       <input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Search" required spellcheck="false" type="text">
+       <input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Search documentation..." required spellcheck="false" type="text">
        <label class="md-search__icon md-icon" for="__search">
        </label>
        <nav aria-label="Search" class="md-search__options">
@@ -987,5 +1035,141 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test Controller: search-box-prominence -->
+  <script>
+    /**
+     * A/B Test: search-box-prominence
+     *
+     * Purpose: Test the impact of enhanced search box visibility on user engagement
+     *
+     * Variants:
+     *   - A (control): Default search box styling
+     *   - B (enhanced): Larger search box with increased padding, subtle border,
+     *                    shadow effects, and improved placeholder text
+     *
+     * Configuration:
+     *   - Test can be controlled via:
+     *     1. URL parameter: ?ab_test_search_box=a or ?ab_test_search_box=b
+     *     2. localStorage: Set 'ab_test_search_box_prominence' to 'a' or 'b'
+     *     3. Default: 50/50 random assignment (persisted in localStorage)
+     *
+     * Implementation:
+     *   - Applies CSS class to body element:
+     *     'ab-test-search-box-prominence-a' or 'ab-test-search-box-prominence-b'
+     *   - Variant assignment is sticky (persists across page loads)
+     *
+     * Metrics to Track:
+     *   - Search box interaction rate (clicks, focus events)
+     *   - Search queries submitted
+     *   - Time to first search interaction
+     *   - Search result engagement
+     */
+    (function initSearchBoxProminenceABTest() {
+      const TEST_NAME = 'search-box-prominence';
+      const STORAGE_KEY = 'ab_test_search_box_prominence';
+      const URL_PARAM = 'ab_test_search_box';
+
+      /**
+       * Get variant from URL parameter
+       * @returns {string|null} 'a', 'b', or null
+       */
+      function getVariantFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const variant = urlParams.get(URL_PARAM);
+        return (variant === 'a' || variant === 'b') ? variant : null;
+      }
+
+      /**
+       * Get variant from localStorage
+       * @returns {string|null} 'a', 'b', or null
+       */
+      function getVariantFromStorage() {
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          return (stored === 'a' || stored === 'b') ? stored : null;
+        } catch (e) {
+          console.warn('localStorage not available for A/B test', e);
+          return null;
+        }
+      }
+
+      /**
+       * Save variant to localStorage
+       * @param {string} variant - 'a' or 'b'
+       */
+      function saveVariantToStorage(variant) {
+        try {
+          localStorage.setItem(STORAGE_KEY, variant);
+        } catch (e) {
+          console.warn('Could not save A/B test variant to localStorage', e);
+        }
+      }
+
+      /**
+       * Randomly assign a variant (50/50 split)
+       * @returns {string} 'a' or 'b'
+       */
+      function assignRandomVariant() {
+        return Math.random() < 0.5 ? 'a' : 'b';
+      }
+
+      /**
+       * Determine which variant to show
+       * Priority: URL param > localStorage > random assignment
+       * @returns {string} 'a' or 'b'
+       */
+      function determineVariant() {
+        // 1. Check URL parameter (highest priority - for testing/QA)
+        const urlVariant = getVariantFromURL();
+        if (urlVariant) {
+          saveVariantToStorage(urlVariant);
+          return urlVariant;
+        }
+
+        // 2. Check localStorage (persistent assignment)
+        const storedVariant = getVariantFromStorage();
+        if (storedVariant) {
+          return storedVariant;
+        }
+
+        // 3. Assign randomly and persist
+        const newVariant = assignRandomVariant();
+        saveVariantToStorage(newVariant);
+        return newVariant;
+      }
+
+      /**
+       * Apply the variant styling to the page
+       * @param {string} variant - 'a' or 'b'
+       */
+      function applyVariant(variant) {
+        const className = `ab-test-${TEST_NAME}-${variant}`;
+        document.body.classList.add(className);
+
+        // Store variant info in data attribute for analytics
+        document.body.setAttribute('data-ab-test-search-box', variant);
+
+        // Log to console for debugging (remove in production or gate with debug flag)
+        if (window.location.search.includes('debug=true')) {
+          console.log(`A/B Test (${TEST_NAME}): Variant ${variant.toUpperCase()} applied`);
+        }
+      }
+
+      // Execute the A/B test
+      try {
+        const variant = determineVariant();
+        applyVariant(variant);
+
+        // Expose variant for analytics tracking
+        window.abTestSearchBoxVariant = variant;
+      } catch (error) {
+        console.error('Error initializing A/B test:', error);
+        // Fallback to control variant on error
+        applyVariant('a');
+        window.abTestSearchBoxVariant = 'a';
+      }
+    })();
+  </script>
  </body>
 </html>
