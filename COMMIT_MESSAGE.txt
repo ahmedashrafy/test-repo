@@ -1,0 +1,61 @@
+feat: Implement navigation structure A/B test
+
+Implement A/B test comparing flat vs. nested expandable navigation to improve
+user engagement and time-on-page metrics for documentation site.
+
+Changes:
+- Add navigation structure variants (flat control vs. nested expandable)
+- Implement CSS styling with smooth expand/collapse animations
+- Add comprehensive JavaScript for A/B test logic and metrics tracking
+- Include feature flags for testing and debugging
+- Add analytics integration with multiple provider support
+
+Features:
+- Automatic 50/50 variant assignment with localStorage persistence
+- URL parameter override (?nav_variant=flat|nested) for testing
+- Comprehensive metrics tracking:
+  * Average time on page
+  * Number of sections explored
+  * Scroll depth (0-100%)
+  * Navigation clicks
+  * Section toggle events
+  * Scroll depth milestones
+- Google Analytics integration (auto-detected)
+- Custom analytics endpoint support
+- Beacon API for reliable final metrics transmission
+- Browser console debugging tools
+
+Technical Details:
+- Self-contained IIFE to avoid namespace pollution
+- Event-driven metrics collection
+- Debounced scroll tracking for performance
+- Graceful degradation without analytics
+- No external dependencies
+
+Testing:
+- Both variants tested and functional
+- Metrics tracking verified in console
+- CSS transitions smooth and performant
+- Feature flags working correctly
+- localStorage persistence confirmed
+
+Documentation:
+- NAVIGATION_AB_TEST_README.md: Complete usage guide
+- AB_TEST_SUMMARY.md: Implementation details
+- QUICK_START.md: Quick reference for developers
+
+Files Modified:
+- g0.html (lines 612-654: CSS, lines 765-854: HTML, lines 1095-1372: JavaScript)
+
+Test Configuration:
+- Test ID: nav-structure-v1
+- Test Name: navigation-structure-test
+- Variants: flat (control) | nested (treatment)
+- Split: 50/50
+
+Ready For:
+- Integration testing
+- Analytics endpoint configuration
+- Production deployment
+
+Related Issue: #navigation-structure-test

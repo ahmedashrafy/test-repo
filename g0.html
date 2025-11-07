@@ -608,6 +608,50 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: Navigation Structure CSS */
+/* Styles for nested navigation variant */
+.md-nav__item--nested .md-nav__icon {
+  transition: transform 0.25s;
+}
+
+.md-nav__item--nested .md-nav__toggle:checked ~ .md-nav__link .md-nav__icon {
+  transform: rotate(90deg);
+}
+
+.md-nav__item--nested .md-nav {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.md-nav__item--nested .md-nav__toggle:checked ~ .md-nav {
+  max-height: 500px;
+  transition: max-height 0.5s ease-in;
+}
+
+/* Hide control/variant items based on active variant */
+[data-nav-variant="flat"] .nav-variant-item {
+  display: none !important;
+}
+
+[data-nav-variant="nested"] .nav-control-item {
+  display: none !important;
+}
+
+[data-nav-variant="nested"] .nav-variant-item {
+  display: block !important;
+}
+
+/* Visual indicators for nested sections */
+.md-nav__item--nested > .md-nav__link {
+  font-weight: 600;
+  padding-left: 0.6rem;
+}
+
+.md-nav__item--nested .md-nav__list .md-nav__item {
+  padding-left: 1.2rem;
+}
   </style>
  </head>
  <body dir="ltr">
@@ -718,34 +762,94 @@
            </div>
           </a>
          </div>
-         <ul class="md-nav__list">
-          <li class="md-nav__item">
+         <!-- A/B Test: Navigation Structure Test -->
+         <!-- Feature Flag: Set data-nav-variant="nested" for variant B, "flat" for control (variant A) -->
+         <ul class="md-nav__list" data-nav-variant="flat" id="primary-navigation">
+          <!-- Control Version (Flat List) - Default -->
+          <li class="md-nav__item nav-control-item">
            <a class="md-nav__link">
             <span class="md-ellipsis">
              Introduction
             </span>
            </a>
           </li>
-          <li class="md-nav__item">
+          <li class="md-nav__item nav-control-item">
            <a class="md-nav__link">
             <span class="md-ellipsis">
              Categories of Risk
             </span>
            </a>
           </li>
-          <li class="md-nav__item">
+          <li class="md-nav__item nav-control-item">
            <a class="md-nav__link">
             <span class="md-ellipsis">
              Network Consensus Risk
             </span>
            </a>
           </li>
-          <li class="md-nav__item">
+          <li class="md-nav__item nav-control-item">
            <a class="md-nav__link">
             <span class="md-ellipsis">
              Protocol Architecture Risk
             </span>
            </a>
+          </li>
+
+          <!-- Variant B (Nested Expandable Structure) - Hidden by default -->
+          <li class="md-nav__item md-nav__item--nested nav-variant-item" style="display: none;">
+           <input class="md-nav__toggle md-toggle" id="nav-section-getting-started" type="checkbox">
+           <label class="md-nav__link" for="nav-section-getting-started">
+            <span class="md-ellipsis">
+             Getting Started
+            </span>
+            <span class="md-nav__icon md-icon"></span>
+           </label>
+           <nav class="md-nav" data-md-level="1">
+            <ul class="md-nav__list">
+             <li class="md-nav__item">
+              <a class="md-nav__link">
+               <span class="md-ellipsis">
+                Introduction
+               </span>
+              </a>
+             </li>
+            </ul>
+           </nav>
+          </li>
+
+          <li class="md-nav__item md-nav__item--nested nav-variant-item" style="display: none;">
+           <input class="md-nav__toggle md-toggle" id="nav-section-risk-framework" type="checkbox">
+           <label class="md-nav__link" for="nav-section-risk-framework">
+            <span class="md-ellipsis">
+             Risk Framework
+            </span>
+            <span class="md-nav__icon md-icon"></span>
+           </label>
+           <nav class="md-nav" data-md-level="1">
+            <ul class="md-nav__list">
+             <li class="md-nav__item">
+              <a class="md-nav__link">
+               <span class="md-ellipsis">
+                Categories of Risk
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link">
+               <span class="md-ellipsis">
+                Network Consensus Risk
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link">
+               <span class="md-ellipsis">
+                Protocol Architecture Risk
+               </span>
+              </a>
+             </li>
+            </ul>
+           </nav>
           </li>
          </ul>
         </nav>
@@ -987,5 +1091,284 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: Navigation Structure JavaScript -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ============================================
+      // A/B Test Configuration
+      // ============================================
+      const AB_TEST_CONFIG = {
+        testName: 'navigation-structure-test',
+        testId: 'nav-structure-v1',
+        variants: {
+          CONTROL: 'flat',      // Variant A: Flat navigation list
+          VARIANT_B: 'nested'   // Variant B: Nested expandable navigation
+        },
+        // Set to true to force a specific variant (useful for testing)
+        forceVariant: null  // Options: null, 'flat', or 'nested'
+      };
+
+      // ============================================
+      // A/B Test Assignment
+      // ============================================
+      function assignVariant() {
+        // Check for forced variant (from config or URL parameter)
+        const urlParams = new URLSearchParams(window.location.search);
+        const forceVariant = urlParams.get('nav_variant') || AB_TEST_CONFIG.forceVariant;
+
+        if (forceVariant && (forceVariant === 'flat' || forceVariant === 'nested')) {
+          return forceVariant;
+        }
+
+        // Check localStorage for existing assignment
+        const storageKey = 'ab_test_' + AB_TEST_CONFIG.testId;
+        let assignment = localStorage.getItem(storageKey);
+
+        if (!assignment) {
+          // New user - randomly assign variant (50/50 split)
+          assignment = Math.random() < 0.5
+            ? AB_TEST_CONFIG.variants.CONTROL
+            : AB_TEST_CONFIG.variants.VARIANT_B;
+
+          // Store assignment
+          localStorage.setItem(storageKey, assignment);
+
+          // Log assignment event
+          trackEvent('ab_test_assigned', {
+            test_name: AB_TEST_CONFIG.testName,
+            variant: assignment
+          });
+        }
+
+        return assignment;
+      }
+
+      // ============================================
+      // Metrics Tracking System
+      // ============================================
+      const metrics = {
+        sessionStartTime: Date.now(),
+        pageLoadTime: Date.now(),
+        scrollDepth: 0,
+        maxScrollDepth: 0,
+        sectionsExplored: new Set(),
+        navigationClicks: 0,
+        sectionToggles: 0,
+        events: []
+      };
+
+      // Track event to metrics storage
+      function trackEvent(eventName, data) {
+        const event = {
+          timestamp: Date.now(),
+          event: eventName,
+          variant: metrics.variant,
+          ...data
+        };
+
+        metrics.events.push(event);
+
+        // Log to console for debugging (remove in production)
+        console.log('[A/B Test]', event);
+
+        // Send to analytics service (implement based on your analytics provider)
+        sendToAnalytics(event);
+      }
+
+      // Send metrics to analytics provider
+      function sendToAnalytics(event) {
+        // Example: Google Analytics integration
+        if (typeof gtag !== 'undefined') {
+          gtag('event', event.event, {
+            event_category: 'ab_test_' + AB_TEST_CONFIG.testName,
+            event_label: event.variant,
+            ...event
+          });
+        }
+
+        // Example: Custom analytics endpoint
+        // fetch('/api/analytics', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify(event)
+        // });
+      }
+
+      // ============================================
+      // Scroll Depth Tracking
+      // ============================================
+      function calculateScrollDepth() {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        return Math.round(((scrollTop + windowHeight) / documentHeight) * 100);
+      }
+
+      function trackScrollDepth() {
+        const currentDepth = calculateScrollDepth();
+        metrics.scrollDepth = currentDepth;
+
+        if (currentDepth > metrics.maxScrollDepth) {
+          metrics.maxScrollDepth = currentDepth;
+
+          // Track milestone scroll depths
+          const milestones = [25, 50, 75, 90, 100];
+          milestones.forEach(milestone => {
+            if (currentDepth >= milestone &&
+                !metrics[`scrollMilestone_${milestone}`]) {
+              metrics[`scrollMilestone_${milestone}`] = true;
+              trackEvent('scroll_depth', {
+                depth: milestone,
+                time_to_scroll: Date.now() - metrics.pageLoadTime
+              });
+            }
+          });
+        }
+      }
+
+      // Debounce scroll events
+      let scrollTimeout;
+      window.addEventListener('scroll', function() {
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(trackScrollDepth, 100);
+      }, { passive: true });
+
+      // ============================================
+      // Navigation Click Tracking
+      // ============================================
+      function trackNavigationClicks() {
+        const navigation = document.getElementById('primary-navigation');
+        if (!navigation) return;
+
+        // Track all navigation link clicks
+        navigation.addEventListener('click', function(event) {
+          const link = event.target.closest('.md-nav__link');
+          if (link) {
+            metrics.navigationClicks++;
+
+            const linkText = link.textContent.trim();
+            trackEvent('navigation_click', {
+              link_text: linkText,
+              total_clicks: metrics.navigationClicks,
+              time_on_page: Date.now() - metrics.pageLoadTime
+            });
+          }
+
+          // Track section toggles (for nested variant)
+          const toggle = event.target.closest('label[for^="nav-section-"]');
+          if (toggle && metrics.variant === AB_TEST_CONFIG.variants.VARIANT_B) {
+            metrics.sectionToggles++;
+
+            const sectionId = toggle.getAttribute('for');
+            const sectionName = toggle.textContent.trim();
+
+            // Track which sections are being explored
+            metrics.sectionsExplored.add(sectionName);
+
+            trackEvent('section_toggle', {
+              section: sectionName,
+              sections_explored: metrics.sectionsExplored.size,
+              total_toggles: metrics.sectionToggles,
+              time_on_page: Date.now() - metrics.pageLoadTime
+            });
+          }
+        });
+      }
+
+      // ============================================
+      // Time on Page Tracking
+      // ============================================
+      function trackTimeOnPage() {
+        const timeOnPage = Date.now() - metrics.pageLoadTime;
+
+        trackEvent('time_on_page', {
+          duration_ms: timeOnPage,
+          duration_seconds: Math.round(timeOnPage / 1000),
+          scroll_depth: metrics.maxScrollDepth,
+          navigation_clicks: metrics.navigationClicks,
+          sections_explored: metrics.sectionsExplored.size
+        });
+      }
+
+      // Track time on page at intervals
+      const timeTrackingIntervals = [10000, 30000, 60000, 120000]; // 10s, 30s, 1m, 2m
+      timeTrackingIntervals.forEach(interval => {
+        setTimeout(() => trackTimeOnPage(), interval);
+      });
+
+      // Track when user leaves page
+      window.addEventListener('beforeunload', function() {
+        trackTimeOnPage();
+
+        // Store final metrics
+        const finalMetrics = {
+          test_name: AB_TEST_CONFIG.testName,
+          variant: metrics.variant,
+          time_on_page_ms: Date.now() - metrics.pageLoadTime,
+          max_scroll_depth: metrics.maxScrollDepth,
+          navigation_clicks: metrics.navigationClicks,
+          section_toggles: metrics.sectionToggles,
+          sections_explored: metrics.sectionsExplored.size
+        };
+
+        // Use sendBeacon for reliable transmission on page unload
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(
+            '/api/ab-test-metrics',
+            JSON.stringify(finalMetrics)
+          );
+        }
+      });
+
+      // ============================================
+      // Initialize A/B Test
+      // ============================================
+      function initializeABTest() {
+        // Assign variant
+        const variant = assignVariant();
+        metrics.variant = variant;
+
+        // Apply variant to navigation
+        const navigation = document.getElementById('primary-navigation');
+        if (navigation) {
+          navigation.setAttribute('data-nav-variant', variant);
+        }
+
+        // Track page view
+        trackEvent('page_view', {
+          test_name: AB_TEST_CONFIG.testName,
+          variant: variant,
+          url: window.location.href,
+          referrer: document.referrer
+        });
+
+        // Initialize tracking
+        trackNavigationClicks();
+        trackScrollDepth();
+
+        // Log variant assignment
+        console.log('[A/B Test] Navigation Structure Test initialized');
+        console.log('[A/B Test] Assigned variant:', variant);
+        console.log('[A/B Test] To force a variant, add ?nav_variant=flat or ?nav_variant=nested to URL');
+      }
+
+      // ============================================
+      // Start A/B Test
+      // ============================================
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeABTest);
+      } else {
+        initializeABTest();
+      }
+
+      // Expose metrics for debugging (remove in production)
+      window.abTestMetrics = metrics;
+      window.abTestConfig = AB_TEST_CONFIG;
+    })();
+  </script>
  </body>
 </html>
