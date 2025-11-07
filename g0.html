@@ -608,6 +608,88 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test Styles - intro-content-length-test */
+.ab-variant {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Variant B: Condensed intro styles */
+.ab-variant-b .intro-summary {
+  margin-bottom: 1.5em;
+}
+
+.ab-variant-b .intro-summary p {
+  margin-bottom: 1em;
+  line-height: 1.6;
+}
+
+.ab-variant-b .intro-summary strong {
+  color: var(--md-primary-fg-color);
+  font-weight: 700;
+}
+
+/* Read More Toggle Button */
+.read-more-toggle {
+  display: inline-block;
+  margin-top: 0.5em;
+  padding: 0.5em 1.2em;
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  border: none;
+  border-radius: 0.2rem;
+  font-size: 0.8em;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.25s, transform 0.2s;
+  font-family: var(--md-text-font-family);
+}
+
+.read-more-toggle:hover {
+  background-color: var(--md-accent-fg-color);
+  transform: translateY(-2px);
+}
+
+.read-more-toggle:active {
+  transform: translateY(0);
+}
+
+.read-more-toggle:focus {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 2px;
+}
+
+/* Expanded content animation */
+.intro-expanded {
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 0;
+  max-height: 0;
+}
+
+.intro-expanded.expanded {
+  opacity: 1;
+  max-height: 2000px; /* Large enough to accommodate content */
+  margin-top: 1em;
+}
+
+/* A/B Test Debug Info (hidden by default, can be enabled) */
+.ab-test-debug {
+  display: none;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px;
+  font-size: 0.7em;
+  border-radius: 5px;
+  z-index: 9999;
+}
+
+.ab-test-debug.show {
+  display: block;
+}
   </style>
  </head>
  <body dir="ltr">
@@ -755,47 +837,113 @@
      <div class="md-content" data-md-component="content">
       <article class="md-content__inner md-typeset">
        <!-- BEGIN INCLUDE framework/01intro/introduction.md -->
-       <h1 id="introduction">
-        Introduction
-       </h1>
-       <p>
-        With several layer-one protocols gaining meaningful traction over the last few years and layer-two protocols taking
-        <a>
-         center stage in the scalability roadmap for Ethereum
-        </a>
-        , it is increasingly becoming clear that the future will be multichain. This thesis is further reinforced by emerging patterns such as
-        <a>
-         modular blockchains
-        </a>
-        ,
-        <a>
-         application-specific chains
-        </a>
-        , and
-        <a>
-         fractal scaling
-        </a>
-        . A multichain world is one in which disparate chains co-exist as thriving ecosystems.
-       </p>
-       <p>
-        In the absence of a countervailing force, the proliferation of chains would naturally lead to increased fragmentation and the siloing of ecosystems. Crosschain protocols directly address this problem by enabling interoperation across distinct chains.
-       </p>
-       <p>
-        The growth and adoption of such protocols over the last couple of years have been astounding. The total value locked in token bridges on Ethereum alone, which only offers a partial picture of the scale of adoption of such protocols, reached a high of US$27B in late 2021.
-       </p>
-       <p>
-        The flip side to this rapid growth and adoption has been the slew of high-profile hacks and failures of these protocols. Between 2021 and 2022, more than
-        <a>
-         US$2.5B was stolen in bridge hacks
-        </a>
-        , which is more than two-thirds of all DeFI hacks in that period.
-       </p>
-       <p>
-        To this end, this document provides a high-level systematic overview of the security risks in crosschain protocols by identifying, classifying, and analyzing the risk elements inherent in the design, implementation, and operation of such infrastructure. In addition, it offers a set of risk controls and best practices to mitigate the likelihood and severity of risks.
-       </p>
-       <p>
-        While this document is still a work in progress, its ultimate objective is to enable progress toward more secure, robust, and decentralized crosschain protocols that can serve as solid foundations for a multichain future. We highly encourage contributions and feedback from the community towards this end.
-       </p>
+       <!-- A/B Test: intro-content-length-test -->
+       <div id="ab-test-intro" data-ab-test="intro-content-length-test">
+        <h1 id="introduction">
+         Introduction
+        </h1>
+
+        <!-- Variant A: Full detailed introduction (default) -->
+        <div class="ab-variant ab-variant-a" data-variant="variant-a">
+         <p>
+          With several layer-one protocols gaining meaningful traction over the last few years and layer-two protocols taking
+          <a>
+           center stage in the scalability roadmap for Ethereum
+          </a>
+          , it is increasingly becoming clear that the future will be multichain. This thesis is further reinforced by emerging patterns such as
+          <a>
+           modular blockchains
+          </a>
+          ,
+          <a>
+           application-specific chains
+          </a>
+          , and
+          <a>
+           fractal scaling
+          </a>
+          . A multichain world is one in which disparate chains co-exist as thriving ecosystems.
+         </p>
+         <p>
+          In the absence of a countervailing force, the proliferation of chains would naturally lead to increased fragmentation and the siloing of ecosystems. Crosschain protocols directly address this problem by enabling interoperation across distinct chains.
+         </p>
+         <p>
+          The growth and adoption of such protocols over the last couple of years have been astounding. The total value locked in token bridges on Ethereum alone, which only offers a partial picture of the scale of adoption of such protocols, reached a high of US$27B in late 2021.
+         </p>
+         <p>
+          The flip side to this rapid growth and adoption has been the slew of high-profile hacks and failures of these protocols. Between 2021 and 2022, more than
+          <a>
+           US$2.5B was stolen in bridge hacks
+          </a>
+          , which is more than two-thirds of all DeFI hacks in that period.
+         </p>
+         <p>
+          To this end, this document provides a high-level systematic overview of the security risks in crosschain protocols by identifying, classifying, and analyzing the risk elements inherent in the design, implementation, and operation of such infrastructure. In addition, it offers a set of risk controls and best practices to mitigate the likelihood and severity of risks.
+         </p>
+         <p>
+          While this document is still a work in progress, its ultimate objective is to enable progress toward more secure, robust, and decentralized crosschain protocols that can serve as solid foundations for a multichain future. We highly encourage contributions and feedback from the community towards this end.
+         </p>
+        </div>
+
+        <!-- Variant B: Condensed introduction with expandable section -->
+        <div class="ab-variant ab-variant-b" data-variant="variant-b" style="display: none;">
+         <div class="intro-summary">
+          <p>
+           <strong>The future is multichain.</strong> As layer-one and layer-two protocols proliferate, crosschain protocols have emerged to enable interoperation across distinct blockchains, preventing ecosystem fragmentation.
+          </p>
+          <p>
+           <strong>Rapid growth, significant risks:</strong> Token bridges reached US$27B in locked value by late 2021, but over US$2.5B was stolen in bridge hacks between 2021-2022—representing two-thirds of all DeFi hacks in that period.
+          </p>
+          <p>
+           <strong>This framework provides:</strong> A systematic overview of security risks in crosschain protocols, with classifications, analysis, and best practices to enable more secure, robust, and decentralized infrastructure.
+          </p>
+          <button class="read-more-toggle" aria-expanded="false" aria-controls="intro-expanded-content">
+           Read full introduction
+          </button>
+         </div>
+
+         <div class="intro-expanded" id="intro-expanded-content" style="display: none;">
+          <p>
+           With several layer-one protocols gaining meaningful traction over the last few years and layer-two protocols taking
+           <a>
+            center stage in the scalability roadmap for Ethereum
+           </a>
+           , it is increasingly becoming clear that the future will be multichain. This thesis is further reinforced by emerging patterns such as
+           <a>
+            modular blockchains
+           </a>
+           ,
+           <a>
+            application-specific chains
+           </a>
+           , and
+           <a>
+            fractal scaling
+           </a>
+           . A multichain world is one in which disparate chains co-exist as thriving ecosystems.
+          </p>
+          <p>
+           In the absence of a countervailing force, the proliferation of chains would naturally lead to increased fragmentation and the siloing of ecosystems. Crosschain protocols directly address this problem by enabling interoperation across distinct chains.
+          </p>
+          <p>
+           The growth and adoption of such protocols over the last couple of years have been astounding. The total value locked in token bridges on Ethereum alone, which only offers a partial picture of the scale of adoption of such protocols, reached a high of US$27B in late 2021.
+          </p>
+          <p>
+           The flip side to this rapid growth and adoption has been the slew of high-profile hacks and failures of these protocols. Between 2021 and 2022, more than
+           <a>
+            US$2.5B was stolen in bridge hacks
+           </a>
+           , which is more than two-thirds of all DeFI hacks in that period.
+          </p>
+          <p>
+           To this end, this document provides a high-level systematic overview of the security risks in crosschain protocols by identifying, classifying, and analyzing the risk elements inherent in the design, implementation, and operation of such infrastructure. In addition, it offers a set of risk controls and best practices to mitigate the likelihood and severity of risks.
+          </p>
+          <p>
+           While this document is still a work in progress, its ultimate objective is to enable progress toward more secure, robust, and decentralized crosschain protocols that can serve as solid foundations for a multichain future. We highly encourage contributions and feedback from the community towards this end.
+          </p>
+         </div>
+        </div>
+       </div>
        <h2 id="types-of-crosschain-interaction">
         Types of Crosschain Interaction
        </h2>
@@ -987,5 +1135,326 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test Script: intro-content-length-test -->
+  <script>
+    /**
+     * A/B Test Configuration and Implementation
+     * Test: intro-content-length-test
+     * Purpose: Compare engagement between detailed vs. condensed introduction
+     */
+    (function() {
+      'use strict';
+
+      // Configuration
+      const AB_TEST_CONFIG = {
+        testName: 'intro-content-length-test',
+        testId: 'ab-test-intro',
+        variants: ['variant-a', 'variant-b'],
+        variantWeights: [0.5, 0.5], // 50/50 split
+        cookieName: 'ab_test_intro_variant',
+        cookieExpireDays: 30,
+        enableDebug: false // Set to true to show debug panel
+      };
+
+      // Tracking data
+      let trackingData = {
+        testName: AB_TEST_CONFIG.testName,
+        variant: null,
+        pageLoadTime: Date.now(),
+        scrollDepth: 0,
+        maxScrollDepth: 0,
+        timeOnPage: 0,
+        readMoreClicked: false,
+        readMoreClickTime: null,
+        events: []
+      };
+
+      /**
+       * Utility: Set cookie
+       */
+      function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/;SameSite=Strict";
+      }
+
+      /**
+       * Utility: Get cookie
+       */
+      function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for(let i = 0; i < ca.length; i++) {
+          let c = ca[i];
+          while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+          if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+      }
+
+      /**
+       * Select A/B test variant
+       */
+      function selectVariant() {
+        // Check if user already has a variant assigned
+        const existingVariant = getCookie(AB_TEST_CONFIG.cookieName);
+        if (existingVariant && AB_TEST_CONFIG.variants.includes(existingVariant)) {
+          return existingVariant;
+        }
+
+        // Randomly assign variant based on weights
+        const random = Math.random();
+        const cumulativeWeight = AB_TEST_CONFIG.variantWeights.reduce((acc, weight, index) => {
+          if (random >= acc && random < acc + weight) {
+            return index;
+          }
+          return acc + weight;
+        }, 0);
+
+        const selectedIndex = typeof cumulativeWeight === 'number' && cumulativeWeight < AB_TEST_CONFIG.variantWeights.length
+          ? cumulativeWeight
+          : Math.floor(random * AB_TEST_CONFIG.variants.length);
+
+        const variant = AB_TEST_CONFIG.variants[selectedIndex];
+
+        // Save variant to cookie
+        setCookie(AB_TEST_CONFIG.cookieName, variant, AB_TEST_CONFIG.cookieExpireDays);
+
+        return variant;
+      }
+
+      /**
+       * Show the selected variant
+       */
+      function showVariant(variant) {
+        const container = document.getElementById(AB_TEST_CONFIG.testId);
+        if (!container) return;
+
+        // Hide all variants
+        const allVariants = container.querySelectorAll('.ab-variant');
+        allVariants.forEach(el => {
+          el.style.display = 'none';
+        });
+
+        // Show selected variant
+        const selectedVariant = container.querySelector(`[data-variant="${variant}"]`);
+        if (selectedVariant) {
+          selectedVariant.style.display = 'block';
+          trackingData.variant = variant;
+        }
+      }
+
+      /**
+       * Initialize Read More toggle functionality (for variant B)
+       */
+      function initReadMoreToggle() {
+        const toggleButton = document.querySelector('.read-more-toggle');
+        const expandedContent = document.getElementById('intro-expanded-content');
+
+        if (!toggleButton || !expandedContent) return;
+
+        toggleButton.addEventListener('click', function() {
+          const isExpanded = expandedContent.classList.contains('expanded');
+
+          if (isExpanded) {
+            // Collapse
+            expandedContent.classList.remove('expanded');
+            expandedContent.style.display = 'none';
+            toggleButton.textContent = 'Read full introduction';
+            toggleButton.setAttribute('aria-expanded', 'false');
+          } else {
+            // Expand
+            expandedContent.style.display = 'block';
+            setTimeout(() => {
+              expandedContent.classList.add('expanded');
+            }, 10);
+            toggleButton.textContent = 'Hide full introduction';
+            toggleButton.setAttribute('aria-expanded', 'true');
+
+            // Track read more click
+            if (!trackingData.readMoreClicked) {
+              trackingData.readMoreClicked = true;
+              trackingData.readMoreClickTime = Date.now() - trackingData.pageLoadTime;
+              trackEvent('read_more_clicked', {
+                timeToClick: trackingData.readMoreClickTime
+              });
+            }
+          }
+        });
+      }
+
+      /**
+       * Track scroll depth
+       */
+      function initScrollTracking() {
+        let ticking = false;
+
+        function updateScrollDepth() {
+          const windowHeight = window.innerHeight;
+          const documentHeight = document.documentElement.scrollHeight;
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+          // Calculate scroll depth percentage
+          const scrollDepth = Math.round((scrollTop + windowHeight) / documentHeight * 100);
+
+          if (scrollDepth > trackingData.maxScrollDepth) {
+            trackingData.maxScrollDepth = scrollDepth;
+
+            // Track milestones
+            [25, 50, 75, 100].forEach(milestone => {
+              if (trackingData.maxScrollDepth >= milestone &&
+                  !trackingData.events.some(e => e.type === 'scroll_milestone' && e.data.milestone === milestone)) {
+                trackEvent('scroll_milestone', { milestone: milestone });
+              }
+            });
+          }
+
+          ticking = false;
+        }
+
+        window.addEventListener('scroll', function() {
+          if (!ticking) {
+            window.requestAnimationFrame(updateScrollDepth);
+            ticking = true;
+          }
+        });
+      }
+
+      /**
+       * Track time on page
+       */
+      function initTimeTracking() {
+        // Update time periodically
+        setInterval(() => {
+          trackingData.timeOnPage = Date.now() - trackingData.pageLoadTime;
+        }, 1000);
+
+        // Track when user leaves page
+        window.addEventListener('beforeunload', () => {
+          trackingData.timeOnPage = Date.now() - trackingData.pageLoadTime;
+          logTrackingData();
+        });
+
+        // Track page visibility changes
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            trackingData.timeOnPage = Date.now() - trackingData.pageLoadTime;
+            logTrackingData();
+          }
+        });
+      }
+
+      /**
+       * Track custom event
+       */
+      function trackEvent(eventType, data) {
+        trackingData.events.push({
+          type: eventType,
+          timestamp: Date.now() - trackingData.pageLoadTime,
+          data: data || {}
+        });
+
+        if (AB_TEST_CONFIG.enableDebug) {
+          console.log('[A/B Test Event]', eventType, data);
+        }
+      }
+
+      /**
+       * Log tracking data (to console or analytics service)
+       */
+      function logTrackingData() {
+        // In production, send to analytics service
+        console.log('[A/B Test Data]', JSON.stringify(trackingData, null, 2));
+
+        // Example: Send to analytics endpoint
+        // fetch('/api/ab-test/track', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify(trackingData)
+        // });
+      }
+
+      /**
+       * Show debug panel
+       */
+      function showDebugPanel() {
+        if (!AB_TEST_CONFIG.enableDebug) return;
+
+        const debugPanel = document.createElement('div');
+        debugPanel.className = 'ab-test-debug show';
+        debugPanel.innerHTML = `
+          <strong>A/B Test Debug</strong><br>
+          Test: ${AB_TEST_CONFIG.testName}<br>
+          Variant: <span id="debug-variant">${trackingData.variant}</span><br>
+          Scroll: <span id="debug-scroll">0</span>%<br>
+          Time: <span id="debug-time">0</span>s<br>
+          <button id="debug-switch" style="margin-top: 5px; padding: 3px 8px; font-size: 0.9em;">Switch Variant</button>
+        `;
+        document.body.appendChild(debugPanel);
+
+        // Update debug panel periodically
+        setInterval(() => {
+          const timeEl = document.getElementById('debug-time');
+          const scrollEl = document.getElementById('debug-scroll');
+          if (timeEl) timeEl.textContent = Math.round(trackingData.timeOnPage / 1000);
+          if (scrollEl) scrollEl.textContent = trackingData.maxScrollDepth;
+        }, 1000);
+
+        // Switch variant button
+        document.getElementById('debug-switch').addEventListener('click', () => {
+          const currentIndex = AB_TEST_CONFIG.variants.indexOf(trackingData.variant);
+          const nextIndex = (currentIndex + 1) % AB_TEST_CONFIG.variants.length;
+          const nextVariant = AB_TEST_CONFIG.variants[nextIndex];
+
+          setCookie(AB_TEST_CONFIG.cookieName, nextVariant, AB_TEST_CONFIG.cookieExpireDays);
+          location.reload();
+        });
+      }
+
+      /**
+       * Initialize A/B test
+       */
+      function init() {
+        // Select and show variant
+        const variant = selectVariant();
+        showVariant(variant);
+
+        // Initialize functionality based on variant
+        if (variant === 'variant-b') {
+          initReadMoreToggle();
+        }
+
+        // Initialize tracking
+        initScrollTracking();
+        initTimeTracking();
+
+        // Track page view
+        trackEvent('page_view', {
+          variant: variant,
+          timestamp: trackingData.pageLoadTime
+        });
+
+        // Show debug panel if enabled
+        showDebugPanel();
+
+        // Log initial state
+        if (AB_TEST_CONFIG.enableDebug) {
+          console.log('[A/B Test Initialized]', {
+            testName: AB_TEST_CONFIG.testName,
+            variant: variant
+          });
+        }
+      }
+
+      // Run when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
  </body>
 </html>
