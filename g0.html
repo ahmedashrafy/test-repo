@@ -692,7 +692,7 @@
   <div class="md-container" data-md-component="container">
    <main class="md-main" data-md-component="main">
     <div class="md-main__inner md-grid">
-     <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" style="top: 48px;">
+     <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" style="top: 48px;" data-ab-test="navigation-sidebar-layout" data-ab-variant="">
       <div class="md-sidebar__scrollwrap" style="height: 594px;">
        <div class="md-sidebar__inner">
         <nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--integrated" data-md-level="0">
@@ -719,32 +719,36 @@
           </a>
          </div>
          <ul class="md-nav__list">
-          <li class="md-nav__item">
+          <li class="md-nav__item" data-nav-section="introduction" data-nav-expanded="true">
            <a class="md-nav__link">
             <span class="md-ellipsis">
              Introduction
             </span>
+            <span class="md-nav__toggle-icon" aria-hidden="true">▼</span>
            </a>
           </li>
-          <li class="md-nav__item">
+          <li class="md-nav__item" data-nav-section="categories" data-nav-expanded="true">
            <a class="md-nav__link">
             <span class="md-ellipsis">
              Categories of Risk
             </span>
+            <span class="md-nav__toggle-icon" aria-hidden="true">▼</span>
            </a>
           </li>
-          <li class="md-nav__item">
+          <li class="md-nav__item" data-nav-section="consensus" data-nav-expanded="true">
            <a class="md-nav__link">
             <span class="md-ellipsis">
              Network Consensus Risk
             </span>
+            <span class="md-nav__toggle-icon" aria-hidden="true">▼</span>
            </a>
           </li>
-          <li class="md-nav__item">
+          <li class="md-nav__item" data-nav-section="architecture" data-nav-expanded="true">
            <a class="md-nav__link">
             <span class="md-ellipsis">
              Protocol Architecture Risk
             </span>
+            <span class="md-nav__toggle-icon" aria-hidden="true">▼</span>
            </a>
           </li>
          </ul>
@@ -987,5 +991,307 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: Navigation Sidebar Layout -->
+  <style>
+    /* A/B Test Styles for Collapsible Navigation */
+    [data-ab-variant="collapsible"] .md-nav__toggle-icon {
+      display: inline-block;
+      margin-left: 0.5rem;
+      font-size: 0.7rem;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    [data-ab-variant="control"] .md-nav__toggle-icon {
+      display: none;
+    }
+
+    [data-ab-variant="collapsible"] .md-nav__item[data-nav-expanded="false"] .md-nav__toggle-icon {
+      transform: rotate(-90deg);
+    }
+
+    [data-ab-variant="collapsible"] .md-nav__item[data-nav-expanded="false"] {
+      opacity: 0.7;
+    }
+
+    [data-ab-variant="collapsible"] .md-nav__item[data-nav-expanded="false"]:hover {
+      opacity: 1;
+    }
+
+    /* Visual feedback for collapsible variant */
+    [data-ab-variant="collapsible"] .md-nav__link {
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+    }
+
+    [data-ab-variant="collapsible"] .md-nav__link:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    /* Smooth height transitions for collapsing content */
+    [data-ab-variant="collapsible"] .md-nav__item {
+      transition: opacity 0.2s ease;
+    }
+  </style>
+
+  <script>
+    /**
+     * A/B Test: Navigation Sidebar Layout
+     * Tests collapsible vs. always-expanded navigation sidebar
+     *
+     * Variant A (control): Always expanded navigation (current behavior)
+     * Variant B (treatment): Collapsible accordion-style navigation
+     */
+    (function() {
+      'use strict';
+
+      // A/B Test Configuration
+      const AB_TEST_CONFIG = {
+        testName: 'navigation-sidebar-layout',
+        variants: ['control', 'collapsible'],
+        // 50/50 split between control and treatment
+        variantWeights: [0.5, 0.5]
+      };
+
+      // Metrics tracking object
+      const metrics = {
+        variant: null,
+        sessionStart: Date.now(),
+        interactions: [],
+        scrollDepth: 0,
+        sectionClicks: {}
+      };
+
+      /**
+       * Get or assign A/B test variant for this user
+       * Uses localStorage to persist variant across sessions
+       */
+      function getVariant() {
+        const storageKey = `ab_test_${AB_TEST_CONFIG.testName}_variant`;
+        let variant = localStorage.getItem(storageKey);
+
+        if (!variant) {
+          // Assign variant based on weights
+          const random = Math.random();
+          let cumulativeWeight = 0;
+
+          for (let i = 0; i < AB_TEST_CONFIG.variants.length; i++) {
+            cumulativeWeight += AB_TEST_CONFIG.variantWeights[i];
+            if (random < cumulativeWeight) {
+              variant = AB_TEST_CONFIG.variants[i];
+              break;
+            }
+          }
+
+          // Store variant for consistency
+          localStorage.setItem(storageKey, variant);
+        }
+
+        return variant;
+      }
+
+      /**
+       * Initialize the A/B test
+       */
+      function initABTest() {
+        const variant = getVariant();
+        metrics.variant = variant;
+
+        const sidebar = document.querySelector('[data-ab-test="navigation-sidebar-layout"]');
+        if (!sidebar) return;
+
+        // Set variant attribute
+        sidebar.setAttribute('data-ab-variant', variant);
+
+        // Log variant assignment
+        console.log(`[A/B Test] Variant assigned: ${variant}`);
+
+        if (variant === 'collapsible') {
+          initCollapsibleNav();
+        }
+
+        // Initialize metrics tracking
+        initMetricsTracking();
+      }
+
+      /**
+       * Initialize collapsible navigation functionality
+       */
+      function initCollapsibleNav() {
+        const navItems = document.querySelectorAll('.md-nav__item[data-nav-section]');
+
+        navItems.forEach(item => {
+          const link = item.querySelector('.md-nav__link');
+          if (!link) return;
+
+          // Add click handler for toggling
+          link.addEventListener('click', function(e) {
+            // Don't prevent default if there's an actual href
+            const href = link.getAttribute('href');
+            if (href && href !== '#') {
+              // Track the click but allow navigation
+              trackSectionClick(item.getAttribute('data-nav-section'));
+              return;
+            }
+
+            e.preventDefault();
+            toggleNavItem(item);
+          });
+        });
+      }
+
+      /**
+       * Toggle navigation item expanded/collapsed state
+       */
+      function toggleNavItem(item) {
+        const isExpanded = item.getAttribute('data-nav-expanded') === 'true';
+        const newState = !isExpanded;
+
+        item.setAttribute('data-nav-expanded', newState.toString());
+
+        // Track interaction
+        trackInteraction('toggle', {
+          section: item.getAttribute('data-nav-section'),
+          expanded: newState
+        });
+
+        // Track section click
+        trackSectionClick(item.getAttribute('data-nav-section'));
+      }
+
+      /**
+       * Track user interaction
+       */
+      function trackInteraction(type, data) {
+        metrics.interactions.push({
+          type: type,
+          timestamp: Date.now() - metrics.sessionStart,
+          data: data
+        });
+
+        // Log to console for debugging
+        console.log(`[A/B Test Metrics] ${type}:`, data);
+      }
+
+      /**
+       * Track section click
+       */
+      function trackSectionClick(section) {
+        if (!metrics.sectionClicks[section]) {
+          metrics.sectionClicks[section] = 0;
+        }
+        metrics.sectionClicks[section]++;
+
+        trackInteraction('section_click', { section: section });
+      }
+
+      /**
+       * Initialize metrics tracking (time-on-page, scroll depth)
+       */
+      function initMetricsTracking() {
+        // Track scroll depth
+        let maxScrollDepth = 0;
+        window.addEventListener('scroll', function() {
+          const windowHeight = window.innerHeight;
+          const documentHeight = document.documentElement.scrollHeight;
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+          const scrollPercent = Math.round((scrollTop / (documentHeight - windowHeight)) * 100);
+
+          if (scrollPercent > maxScrollDepth) {
+            maxScrollDepth = scrollPercent;
+            metrics.scrollDepth = scrollPercent;
+
+            // Track milestones
+            if (scrollPercent % 25 === 0 && scrollPercent > 0) {
+              trackInteraction('scroll_depth', { depth: scrollPercent });
+            }
+          }
+        });
+
+        // Track time on page when user leaves
+        window.addEventListener('beforeunload', function() {
+          const timeOnPage = Date.now() - metrics.sessionStart;
+          metrics.timeOnPage = timeOnPage;
+
+          // Send metrics (in a real implementation, this would go to an analytics service)
+          sendMetrics(metrics);
+        });
+
+        // Track visibility changes
+        document.addEventListener('visibilitychange', function() {
+          if (document.hidden) {
+            trackInteraction('page_hidden', {
+              timeVisible: Date.now() - metrics.sessionStart
+            });
+          } else {
+            trackInteraction('page_visible', {});
+          }
+        });
+      }
+
+      /**
+       * Send metrics to analytics endpoint
+       * In production, this would send to a real analytics service
+       */
+      function sendMetrics(metricsData) {
+        // Log metrics to console for debugging
+        console.log('[A/B Test Metrics] Session Summary:', {
+          variant: metricsData.variant,
+          timeOnPage: Math.round(metricsData.timeOnPage / 1000) + 's',
+          scrollDepth: metricsData.scrollDepth + '%',
+          sectionClicks: metricsData.sectionClicks,
+          totalInteractions: metricsData.interactions.length
+        });
+
+        // In production, send to analytics service:
+        // fetch('/api/ab-test/metrics', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify(metricsData)
+        // });
+
+        // Store in localStorage for development/testing
+        const storageKey = `ab_test_${AB_TEST_CONFIG.testName}_metrics`;
+        try {
+          const existingMetrics = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          existingMetrics.push({
+            timestamp: new Date().toISOString(),
+            ...metricsData
+          });
+          // Keep only last 10 sessions
+          if (existingMetrics.length > 10) {
+            existingMetrics.shift();
+          }
+          localStorage.setItem(storageKey, JSON.stringify(existingMetrics));
+        } catch (e) {
+          console.error('[A/B Test] Failed to store metrics:', e);
+        }
+      }
+
+      /**
+       * Expose public API for testing/debugging
+       */
+      window.ABTest = {
+        getVariant: function() { return metrics.variant; },
+        getMetrics: function() { return metrics; },
+        resetVariant: function() {
+          const storageKey = `ab_test_${AB_TEST_CONFIG.testName}_variant`;
+          localStorage.removeItem(storageKey);
+          location.reload();
+        }
+      };
+
+      // Initialize on DOM ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initABTest);
+      } else {
+        initABTest();
+      }
+    })();
+  </script>
  </body>
 </html>
