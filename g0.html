@@ -718,34 +718,163 @@
            </div>
           </a>
          </div>
-         <ul class="md-nav__list">
-          <li class="md-nav__item">
-           <a class="md-nav__link">
+         <ul class="md-nav__list" data-ab-test="navigation-layout-sidebar">
+          <!-- A/B Test: navigation-layout-sidebar -->
+          <!-- Variant: Expanded sidebar navigation showing all subsections by default -->
+          <!-- Control group sees collapsed navigation (class: md-nav__item) -->
+          <!-- Test group sees expanded navigation (class: md-nav__item md-nav__item--active md-nav__item--nested) -->
+
+          <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+           <input class="md-nav__toggle md-toggle" id="__nav_1" type="checkbox" checked>
+           <label class="md-nav__link" for="__nav_1">
             <span class="md-ellipsis">
              Introduction
             </span>
-           </a>
+            <span class="md-nav__icon md-icon"></span>
+           </label>
+           <nav class="md-nav" data-md-level="1">
+            <label class="md-nav__title" for="__nav_1">
+             <span class="md-ellipsis">
+              Introduction
+             </span>
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix="">
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#types-of-crosschain-interaction">
+               <span class="md-ellipsis">
+                Types of Crosschain Interaction
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#stakeholders">
+               <span class="md-ellipsis">
+                Stakeholders
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#security-risks">
+               <span class="md-ellipsis">
+                Security Risks
+               </span>
+              </a>
+             </li>
+            </ul>
+           </nav>
           </li>
-          <li class="md-nav__item">
-           <a class="md-nav__link">
+
+          <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+           <input class="md-nav__toggle md-toggle" id="__nav_2" type="checkbox" checked>
+           <label class="md-nav__link" for="__nav_2">
             <span class="md-ellipsis">
              Categories of Risk
             </span>
-           </a>
+            <span class="md-nav__icon md-icon"></span>
+           </label>
+           <nav class="md-nav" data-md-level="1">
+            <label class="md-nav__title" for="__nav_2">
+             <span class="md-ellipsis">
+              Categories of Risk
+             </span>
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix="">
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#risk-categories-overview">
+               <span class="md-ellipsis">
+                Risk Categories Overview
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#risk-severity-assessment">
+               <span class="md-ellipsis">
+                Risk Severity Assessment
+               </span>
+              </a>
+             </li>
+            </ul>
+           </nav>
           </li>
-          <li class="md-nav__item">
-           <a class="md-nav__link">
+
+          <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+           <input class="md-nav__toggle md-toggle" id="__nav_3" type="checkbox" checked>
+           <label class="md-nav__link" for="__nav_3">
             <span class="md-ellipsis">
              Network Consensus Risk
             </span>
-           </a>
+            <span class="md-nav__icon md-icon"></span>
+           </label>
+           <nav class="md-nav" data-md-level="1">
+            <label class="md-nav__title" for="__nav_3">
+             <span class="md-ellipsis">
+              Network Consensus Risk
+             </span>
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix="">
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#consensus-finality">
+               <span class="md-ellipsis">
+                Consensus Finality
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#consensus-attacks">
+               <span class="md-ellipsis">
+                Consensus Attacks
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#network-disruption">
+               <span class="md-ellipsis">
+                Network Disruption
+               </span>
+              </a>
+             </li>
+            </ul>
+           </nav>
           </li>
-          <li class="md-nav__item">
-           <a class="md-nav__link">
+
+          <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+           <input class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox" checked>
+           <label class="md-nav__link" for="__nav_4">
             <span class="md-ellipsis">
              Protocol Architecture Risk
             </span>
-           </a>
+            <span class="md-nav__icon md-icon"></span>
+           </label>
+           <nav class="md-nav" data-md-level="1">
+            <label class="md-nav__title" for="__nav_4">
+             <span class="md-ellipsis">
+              Protocol Architecture Risk
+             </span>
+            </label>
+            <ul class="md-nav__list" data-md-scrollfix="">
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#architectural-design">
+               <span class="md-ellipsis">
+                Architectural Design
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#trust-assumptions">
+               <span class="md-ellipsis">
+                Trust Assumptions
+               </span>
+              </a>
+             </li>
+             <li class="md-nav__item">
+              <a class="md-nav__link" href="#protocol-security">
+               <span class="md-ellipsis">
+                Protocol Security
+               </span>
+              </a>
+             </li>
+            </ul>
+           </nav>
           </li>
          </ul>
         </nav>
@@ -987,5 +1116,189 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test Configuration: navigation-layout-sidebar -->
+  <script>
+    /**
+     * A/B Test: navigation-layout-sidebar
+     *
+     * Test Description:
+     * Tests whether expanding the left sidebar navigation to show all subsections
+     * by default improves user engagement compared to the collapsed state.
+     *
+     * Hypothesis:
+     * Users researching security risks may benefit from seeing the full content
+     * hierarchy upfront, potentially reducing bounce rate and increasing pages per session.
+     *
+     * Success Metrics:
+     * - Navigation clicks per session
+     * - Time on site
+     * - Scroll depth
+     * - Pages per session
+     * - Bounce rate
+     *
+     * Implementation:
+     * - Control: Collapsed navigation (md-nav__item)
+     * - Variant: Expanded navigation (md-nav__item md-nav__item--active md-nav__item--nested)
+     */
+
+    (function() {
+      'use strict';
+
+      const AB_TEST_NAME = 'navigation-layout-sidebar';
+      const AB_TEST_VERSION = '1.0';
+
+      // Feature flag configuration
+      // Set to 'control', 'variant', or 'auto' for automatic assignment
+      const FEATURE_FLAG_MODE = 'auto'; // Change to 'control' or 'variant' to force a variant
+      const VARIANT_TRAFFIC_PERCENTAGE = 50; // 50% of users see the expanded variant
+
+      /**
+       * Gets or creates the user's A/B test variant assignment
+       * Stores the assignment in localStorage for consistency across sessions
+       */
+      function getVariantAssignment() {
+        const storageKey = 'ab_test_' + AB_TEST_NAME;
+
+        // Check if user already has an assignment
+        let assignment = localStorage.getItem(storageKey);
+
+        if (!assignment) {
+          // New user - assign variant based on configuration
+          if (FEATURE_FLAG_MODE === 'control') {
+            assignment = 'control';
+          } else if (FEATURE_FLAG_MODE === 'variant') {
+            assignment = 'variant';
+          } else {
+            // Automatic assignment based on traffic percentage
+            const random = Math.random() * 100;
+            assignment = random < VARIANT_TRAFFIC_PERCENTAGE ? 'variant' : 'control';
+          }
+
+          // Store assignment for future visits
+          localStorage.setItem(storageKey, assignment);
+
+          // Store assignment timestamp
+          localStorage.setItem(storageKey + '_timestamp', Date.now());
+        }
+
+        return assignment;
+      }
+
+      /**
+       * Applies the variant-specific behavior
+       */
+      function applyVariant(variant) {
+        const navList = document.querySelector('[data-ab-test="' + AB_TEST_NAME + '"]');
+
+        if (!navList) {
+          console.warn('A/B Test element not found');
+          return;
+        }
+
+        if (variant === 'control') {
+          // Remove expanded classes and uncheck toggles for control group
+          const navItems = navList.querySelectorAll('.md-nav__item--active');
+          navItems.forEach(function(item) {
+            item.classList.remove('md-nav__item--active');
+            const toggle = item.querySelector('.md-nav__toggle');
+            if (toggle) {
+              toggle.checked = false;
+            }
+          });
+        }
+        // Variant group already has expanded navigation from HTML
+
+        // Add variant identifier to body for CSS customization if needed
+        document.body.setAttribute('data-ab-test-' + AB_TEST_NAME, variant);
+      }
+
+      /**
+       * Tracks navigation interaction metrics
+       */
+      function trackNavigationMetrics() {
+        const startTime = Date.now();
+        let navigationClicks = 0;
+        let maxScrollDepth = 0;
+
+        // Track navigation clicks
+        document.addEventListener('click', function(e) {
+          const navLink = e.target.closest('.md-nav__link');
+          if (navLink) {
+            navigationClicks++;
+
+            // Send event to analytics (placeholder - integrate with your analytics tool)
+            if (typeof gtag !== 'undefined') {
+              gtag('event', 'ab_test_navigation_click', {
+                'test_name': AB_TEST_NAME,
+                'variant': getVariantAssignment(),
+                'click_count': navigationClicks
+              });
+            }
+          }
+        });
+
+        // Track scroll depth
+        function updateScrollDepth() {
+          const scrollPercentage = (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100;
+          if (scrollPercentage > maxScrollDepth) {
+            maxScrollDepth = scrollPercentage;
+          }
+        }
+
+        window.addEventListener('scroll', updateScrollDepth);
+
+        // Track session end
+        window.addEventListener('beforeunload', function() {
+          const timeOnSite = Date.now() - startTime;
+
+          // Send session metrics to analytics (placeholder)
+          if (typeof gtag !== 'undefined') {
+            gtag('event', 'ab_test_session_end', {
+              'test_name': AB_TEST_NAME,
+              'variant': getVariantAssignment(),
+              'time_on_site': timeOnSite,
+              'navigation_clicks': navigationClicks,
+              'max_scroll_depth': Math.round(maxScrollDepth)
+            });
+          }
+
+          // Also log to console for debugging
+          console.log('A/B Test Session Summary:', {
+            test: AB_TEST_NAME,
+            variant: getVariantAssignment(),
+            timeOnSite: timeOnSite + 'ms',
+            navigationClicks: navigationClicks,
+            maxScrollDepth: Math.round(maxScrollDepth) + '%'
+          });
+        });
+      }
+
+      // Initialize A/B test
+      function initABTest() {
+        const variant = getVariantAssignment();
+        console.log('A/B Test Initialized:', AB_TEST_NAME, 'Variant:', variant);
+
+        applyVariant(variant);
+        trackNavigationMetrics();
+
+        // Expose test info for debugging
+        window.abTestInfo = {
+          name: AB_TEST_NAME,
+          version: AB_TEST_VERSION,
+          variant: variant,
+          timestamp: localStorage.getItem('ab_test_' + AB_TEST_NAME + '_timestamp')
+        };
+      }
+
+      // Run when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initABTest);
+      } else {
+        initABTest();
+      }
+    })();
+  </script>
+
  </body>
 </html>
