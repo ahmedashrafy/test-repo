@@ -608,6 +608,43 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: CTA Button Styling */
+.md-header__cta {
+  display: flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  margin-right: 0.4rem;
+}
+
+.md-header__cta .md-button {
+  font-size: 0.7rem;
+  padding: 0.4rem 0.8rem;
+  white-space: nowrap;
+  background-color: var(--md-accent-fg-color);
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+  font-weight: 700;
+  border-radius: 0.1rem;
+  transition: background-color 0.25s, transform 0.125s;
+}
+
+.md-header__cta .md-button:hover {
+  background-color: var(--md-primary-bg-color);
+  color: var(--md-primary-fg-color);
+  transform: scale(1.05);
+}
+
+.md-header__cta .md-button:active {
+  transform: scale(0.98);
+}
+
+/* Responsive design for smaller screens */
+@media screen and (max-width: 76.234375em) {
+  .md-header__cta {
+    display: none;
+  }
+}
   </style>
  </head>
  <body dir="ltr">
@@ -685,6 +722,15 @@
         </li>
        </ul>
       </div>
+     </a>
+    </div>
+    <!-- A/B Test: CTA Button Navigation (Variant A) -->
+    <div id="ab-test-cta-button" class="md-header__cta" style="display: none;">
+     <a href="https://github.com/crosschainriskframework/crosschainriskframework.github.io/issues"
+        class="md-button md-button--primary"
+        id="contribute-cta-button"
+        title="Help improve the Crosschain Risk Framework">
+      Contribute to Framework
      </a>
     </div>
    </nav>
@@ -987,5 +1033,130 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: CTA Button Navigation Script -->
+  <script>
+    (function() {
+      'use strict';
+
+      // A/B Test Configuration
+      const AB_TEST_CONFIG = {
+        name: 'cta-button-navigation',
+        variants: {
+          CONTROL: 'control',
+          VARIANT_A: 'variant_a'
+        },
+        // 50/50 split between control and variant A
+        variantWeights: {
+          control: 0.5,
+          variant_a: 0.5
+        }
+      };
+
+      // Get or assign variant for this user
+      function getAssignedVariant() {
+        const storageKey = 'ab_test_' + AB_TEST_CONFIG.name;
+        let variant = localStorage.getItem(storageKey);
+
+        if (!variant) {
+          // Assign new variant based on weights
+          const random = Math.random();
+          if (random < AB_TEST_CONFIG.variantWeights.control) {
+            variant = AB_TEST_CONFIG.variants.CONTROL;
+          } else {
+            variant = AB_TEST_CONFIG.variants.VARIANT_A;
+          }
+
+          localStorage.setItem(storageKey, variant);
+
+          // Track variant assignment
+          trackEvent('ab_test_assigned', {
+            test_name: AB_TEST_CONFIG.name,
+            variant: variant,
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        return variant;
+      }
+
+      // Track analytics events
+      function trackEvent(eventName, eventData) {
+        // Log to console for debugging
+        console.log('[A/B Test Analytics]', eventName, eventData);
+
+        // Send to analytics service (placeholder - integrate with your analytics platform)
+        // Example integrations:
+        // - Google Analytics: gtag('event', eventName, eventData);
+        // - Mixpanel: mixpanel.track(eventName, eventData);
+        // - Segment: analytics.track(eventName, eventData);
+
+        // Store event locally for development/testing
+        const events = JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+        events.push({
+          event: eventName,
+          data: eventData,
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('ab_test_events', JSON.stringify(events));
+      }
+
+      // Initialize A/B test
+      function initABTest() {
+        const variant = getAssignedVariant();
+
+        // Track page view with variant
+        trackEvent('page_view', {
+          test_name: AB_TEST_CONFIG.name,
+          variant: variant,
+          page: window.location.pathname
+        });
+
+        // Show CTA button for variant A
+        if (variant === AB_TEST_CONFIG.variants.VARIANT_A) {
+          const ctaButton = document.getElementById('ab-test-cta-button');
+          if (ctaButton) {
+            ctaButton.style.display = 'flex';
+
+            // Track CTA button clicks
+            const contributeButton = document.getElementById('contribute-cta-button');
+            if (contributeButton) {
+              contributeButton.addEventListener('click', function(e) {
+                trackEvent('cta_button_click', {
+                  test_name: AB_TEST_CONFIG.name,
+                  variant: variant,
+                  button_text: this.textContent.trim(),
+                  destination_url: this.href,
+                  page: window.location.pathname
+                });
+              });
+            }
+          }
+        }
+
+        // Add variant class to body for any additional styling needs
+        document.body.classList.add('ab-test-' + variant);
+      }
+
+      // Run when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initABTest);
+      } else {
+        initABTest();
+      }
+
+      // Expose function to check current variant (for debugging)
+      window.getABTestVariant = function() {
+        return getAssignedVariant();
+      };
+
+      // Expose function to reset A/B test (for debugging)
+      window.resetABTest = function() {
+        localStorage.removeItem('ab_test_' + AB_TEST_CONFIG.name);
+        localStorage.removeItem('ab_test_events');
+        console.log('A/B test reset. Reload page to get new variant.');
+      };
+    })();
+  </script>
  </body>
 </html>
