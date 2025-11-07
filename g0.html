@@ -608,6 +608,46 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: Header CTA Button Styles */
+.md-header__cta {
+  display: flex;
+  align-items: center;
+  margin-left: 0.8rem;
+  flex-shrink: 0;
+}
+
+.md-header__cta-button {
+  background-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+  padding: 0.4rem 1rem;
+  border-radius: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  white-space: nowrap;
+  display: inline-block;
+  outline-color: var(--md-accent-fg-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-header__cta-button:hover {
+  background-color: var(--md-primary-fg-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.md-header__cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media screen and (max-width: 76.234375em) {
+  .md-header__cta {
+    display: none;
+  }
+}
   </style>
  </head>
  <body dir="ltr">
@@ -685,6 +725,12 @@
         </li>
        </ul>
       </div>
+     </a>
+    </div>
+    <!-- A/B Test: Header CTA Visibility (Variant B) -->
+    <div class="md-header__cta" id="header-cta-test" style="display: none;">
+     <a class="md-header__cta-button" href="#assess-protocol" data-ab-test="header-cta" data-variant="B">
+      Assess Your Protocol
      </a>
     </div>
    </nav>
@@ -987,5 +1033,220 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+  <script>
+    /**
+     * A/B Test: Header CTA Visibility
+     * Test Name: header-cta-visibility
+     * Purpose: Compare engagement metrics between default header (A) and header with CTA button (B)
+     *
+     * Variants:
+     *   A (Control): Default header with navigation and search only
+     *   B (Treatment): Header with additional "Assess Your Protocol" CTA button
+     *
+     * Metrics tracked:
+     *   - CTA click events (variant B only)
+     *   - Navigation item clicks (both variants)
+     *   - Time on page (both variants)
+     *   - Scroll depth (both variants)
+     */
+
+    (function() {
+      'use strict';
+
+      // Configuration
+      const AB_TEST_CONFIG = {
+        testName: 'header-cta-visibility',
+        variants: ['A', 'B'],
+        splitRatio: 0.5, // 50/50 split
+        cookieName: 'ab_test_header_cta',
+        cookieExpiry: 30 // days
+      };
+
+      // Helper: Set cookie
+      function setCookie(name, value, days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = 'expires=' + date.toUTCString();
+        document.cookie = name + '=' + value + ';' + expires + ';path=/;SameSite=Strict';
+      }
+
+      // Helper: Get cookie
+      function getCookie(name) {
+        const nameEQ = name + '=';
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          let cookie = cookies[i].trim();
+          if (cookie.indexOf(nameEQ) === 0) {
+            return cookie.substring(nameEQ.length);
+          }
+        }
+        return null;
+      }
+
+      // Assign user to variant
+      function assignVariant() {
+        let variant = getCookie(AB_TEST_CONFIG.cookieName);
+
+        if (!variant) {
+          // New user - randomly assign variant
+          variant = Math.random() < AB_TEST_CONFIG.splitRatio ? 'A' : 'B';
+          setCookie(AB_TEST_CONFIG.cookieName, variant, AB_TEST_CONFIG.cookieExpiry);
+        }
+
+        return variant;
+      }
+
+      // Analytics tracking function
+      function trackEvent(eventName, eventData) {
+        // Send to analytics (Google Analytics, Mixpanel, etc.)
+        // This is a placeholder - integrate with your analytics platform
+        const event = {
+          event: eventName,
+          test_name: AB_TEST_CONFIG.testName,
+          variant: eventData.variant,
+          timestamp: new Date().toISOString(),
+          ...eventData
+        };
+
+        console.log('[A/B Test Analytics]', event);
+
+        // Example: Send to Google Analytics (if available)
+        if (typeof gtag === 'function') {
+          gtag('event', eventName, {
+            event_category: 'AB_Test',
+            event_label: AB_TEST_CONFIG.testName,
+            variant: eventData.variant,
+            ...eventData
+          });
+        }
+
+        // Example: Send to custom analytics endpoint
+        if (window.fetch) {
+          fetch('/api/analytics/ab-test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(event)
+          }).catch(function(err) {
+            console.warn('[A/B Test] Analytics error:', err);
+          });
+        }
+      }
+
+      // Track page view
+      function trackPageView(variant) {
+        trackEvent('ab_test_page_view', {
+          variant: variant,
+          page_url: window.location.href,
+          page_title: document.title
+        });
+      }
+
+      // Track scroll depth
+      function setupScrollTracking(variant) {
+        let maxScroll = 0;
+        const scrollThresholds = [25, 50, 75, 90, 100];
+        const reached = {};
+
+        function trackScroll() {
+          const scrollPercentage = Math.round(
+            ((window.scrollY + window.innerHeight) / document.documentElement.scrollHeight) * 100
+          );
+
+          if (scrollPercentage > maxScroll) {
+            maxScroll = scrollPercentage;
+          }
+
+          scrollThresholds.forEach(function(threshold) {
+            if (scrollPercentage >= threshold && !reached[threshold]) {
+              reached[threshold] = true;
+              trackEvent('ab_test_scroll_depth', {
+                variant: variant,
+                depth: threshold,
+                max_depth: maxScroll
+              });
+            }
+          });
+        }
+
+        window.addEventListener('scroll', trackScroll, { passive: true });
+
+        // Track final scroll depth on page unload
+        window.addEventListener('beforeunload', function() {
+          trackEvent('ab_test_session_end', {
+            variant: variant,
+            max_scroll_depth: maxScroll,
+            time_on_page: Math.round((Date.now() - window.abTestStartTime) / 1000)
+          });
+        });
+      }
+
+      // Track time on page
+      window.abTestStartTime = Date.now();
+
+      // Track navigation clicks
+      function setupNavigationTracking(variant) {
+        document.addEventListener('click', function(e) {
+          const target = e.target.closest('a');
+          if (!target) return;
+
+          // Track navigation item clicks
+          if (target.closest('.md-nav')) {
+            trackEvent('ab_test_nav_click', {
+              variant: variant,
+              link_text: target.textContent.trim(),
+              link_href: target.getAttribute('href')
+            });
+          }
+
+          // Track CTA button clicks (variant B only)
+          if (target.classList.contains('md-header__cta-button')) {
+            trackEvent('ab_test_cta_click', {
+              variant: variant,
+              cta_text: target.textContent.trim(),
+              cta_href: target.getAttribute('href')
+            });
+          }
+        });
+      }
+
+      // Initialize A/B test
+      function initABTest() {
+        const variant = assignVariant();
+
+        // Store variant in session for consistency
+        sessionStorage.setItem('ab_test_variant', variant);
+
+        // Add variant class to body for debugging/styling
+        document.body.setAttribute('data-ab-test-variant', variant);
+
+        // Show CTA button for variant B
+        if (variant === 'B') {
+          const ctaElement = document.getElementById('header-cta-test');
+          if (ctaElement) {
+            ctaElement.style.display = 'flex';
+          }
+        }
+
+        // Track page view
+        trackPageView(variant);
+
+        // Setup tracking
+        setupScrollTracking(variant);
+        setupNavigationTracking(variant);
+
+        console.log('[A/B Test] Initialized:', {
+          test: AB_TEST_CONFIG.testName,
+          variant: variant
+        });
+      }
+
+      // Run when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initABTest);
+      } else {
+        initABTest();
+      }
+    })();
+  </script>
  </body>
 </html>

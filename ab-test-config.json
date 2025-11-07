@@ -1,0 +1,93 @@
+{
+  "testName": "header-cta-visibility",
+  "description": "Test the impact of adding a prominent call-to-action button in the header navigation",
+  "status": "active",
+  "startDate": "2025-11-07",
+  "endDate": null,
+  "owner": "Development Team",
+
+  "variants": {
+    "A": {
+      "name": "Control",
+      "description": "Default header with navigation and search only",
+      "weight": 0.5
+    },
+    "B": {
+      "name": "Treatment",
+      "description": "Header with additional 'Assess Your Protocol' CTA button",
+      "weight": 0.5
+    }
+  },
+
+  "configuration": {
+    "splitRatio": 0.5,
+    "cookieName": "ab_test_header_cta",
+    "cookieExpiryDays": 30,
+    "minimumSampleSize": 200,
+    "confidenceLevel": 0.95,
+    "statisticalPower": 0.8
+  },
+
+  "cta": {
+    "text": "Assess Your Protocol",
+    "href": "#assess-protocol",
+    "ariaLabel": "Assess your protocol using the risk framework"
+  },
+
+  "tracking": {
+    "enabled": true,
+    "primaryMetrics": [
+      "cta_click_rate",
+      "navigation_engagement"
+    ],
+    "secondaryMetrics": [
+      "time_on_page",
+      "scroll_depth",
+      "bounce_rate"
+    ],
+    "events": [
+      "ab_test_page_view",
+      "ab_test_cta_click",
+      "ab_test_nav_click",
+      "ab_test_scroll_depth",
+      "ab_test_session_end"
+    ]
+  },
+
+  "integrations": {
+    "googleAnalytics": {
+      "enabled": true,
+      "eventCategory": "AB_Test",
+      "eventLabel": "header-cta-visibility"
+    },
+    "customEndpoint": {
+      "enabled": true,
+      "url": "/api/analytics/ab-test",
+      "method": "POST"
+    },
+    "consoleLogging": {
+      "enabled": true,
+      "prefix": "[A/B Test Analytics]"
+    }
+  },
+
+  "successCriteria": {
+    "primary": {
+      "metric": "cta_click_rate",
+      "minimumLift": 0.0,
+      "direction": "increase"
+    },
+    "guardrail": {
+      "metric": "navigation_engagement",
+      "maximumDecrease": 0.05,
+      "direction": "maintain"
+    }
+  },
+
+  "notes": [
+    "CTA button is hidden on mobile devices (< 76.234375em)",
+    "Users are assigned variant via cookie with 30-day expiry",
+    "Test should run for minimum 2-4 weeks to account for weekly patterns",
+    "Update CTA href to actual destination URL before launch"
+  ]
+}
