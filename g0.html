@@ -608,6 +608,57 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: hero-cta-placement - CTA Button Styles */
+.cta-container {
+  text-align: center;
+  margin: 2em 0;
+  padding: 1.5em 0;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 0.875em 2.5em;
+  font-size: 1em;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--md-primary-bg-color, #fff);
+  background-color: var(--md-primary-fg-color, #4051b5);
+  border: 0.1rem solid var(--md-primary-fg-color, #4051b5);
+  border-radius: 0.2rem;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.cta-button:hover {
+  background-color: var(--md-accent-fg-color, #526cfe);
+  border-color: var(--md-accent-fg-color, #526cfe);
+  color: var(--md-accent-bg-color, #fff);
+  transform: translateY(-2px);
+  box-shadow: 0 0.4rem 0.8rem rgba(0, 0, 0, 0.15);
+}
+
+.cta-button:focus {
+  outline: 2px solid var(--md-accent-fg-color, #526cfe);
+  outline-offset: 2px;
+}
+
+.cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 0.1rem 0.3rem rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 44.984375em) {
+  .cta-button {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}
   </style>
  </head>
  <body dir="ltr">
@@ -796,6 +847,12 @@
        <p>
         While this document is still a work in progress, its ultimate objective is to enable progress toward more secure, robust, and decentralized crosschain protocols that can serve as solid foundations for a multichain future. We highly encourage contributions and feedback from the community towards this end.
        </p>
+       <!-- A/B Test: hero-cta-placement - Variant A (Early CTA) -->
+       <div id="cta-variant-a" class="cta-container" style="display: none;">
+        <a href="#categories-of-risk" class="cta-button" data-cta-variant="a" onclick="trackCTAClick('variant-a')">
+         Get Started
+        </a>
+       </div>
        <h2 id="types-of-crosschain-interaction">
         Types of Crosschain Interaction
        </h2>
@@ -824,6 +881,12 @@
        <p>
         General-purpose messaging refers to the communication of any data across chains. It can enable asset exchanges and transfers but also orchestrate complex application behavior across chains for a broad range of use cases.
        </p>
+       <!-- A/B Test: hero-cta-placement - Variant B (Late CTA) -->
+       <div id="cta-variant-b" class="cta-container" style="display: none;">
+        <a href="#categories-of-risk" class="cta-button" data-cta-variant="b" onclick="trackCTAClick('variant-b')">
+         Get Started
+        </a>
+       </div>
        <h2 id="stakeholders">
         Stakeholders
        </h2>
@@ -987,5 +1050,119 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: hero-cta-placement - JavaScript -->
+  <script>
+    /**
+     * A/B Test: Hero CTA Placement
+     * Test Name: hero-cta-placement
+     * Description: Tests whether early CTA placement (after intro) or late placement
+     *              (after Types of Crosschain Interaction) increases user engagement
+     */
+
+    // Cookie utility functions
+    function setCookie(name, value, days) {
+      const d = new Date();
+      d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + d.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    // Get URL parameters
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      const results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // Track analytics event (customize based on your analytics platform)
+    function trackEvent(eventName, eventData) {
+      console.log('Analytics Event:', eventName, eventData);
+
+      // Google Analytics (gtag.js) - Uncomment if using GA4
+      // if (typeof gtag !== 'undefined') {
+      //   gtag('event', eventName, eventData);
+      // }
+
+      // Google Analytics (analytics.js) - Uncomment if using Universal Analytics
+      // if (typeof ga !== 'undefined') {
+      //   ga('send', 'event', eventData.category, eventData.action, eventData.label);
+      // }
+
+      // Custom analytics endpoint - Uncomment and configure if needed
+      // fetch('/api/analytics', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ event: eventName, data: eventData })
+      // });
+    }
+
+    // Track CTA click
+    function trackCTAClick(variant) {
+      trackEvent('cta_click', {
+        test_name: 'hero-cta-placement',
+        variant: variant,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Initialize A/B test
+    function initABTest() {
+      const cookieName = 'ab_test_hero_cta';
+      const testDuration = 30; // days
+
+      // Check for query parameter override (for testing purposes)
+      const variantParam = getUrlParameter('variant');
+      let variant;
+
+      if (variantParam === 'a' || variantParam === 'b') {
+        // Use query parameter variant and set cookie
+        variant = variantParam;
+        setCookie(cookieName, variant, testDuration);
+      } else {
+        // Check if user already has a variant assigned
+        variant = getCookie(cookieName);
+
+        if (!variant) {
+          // Randomly assign variant (50/50 split)
+          variant = Math.random() < 0.5 ? 'a' : 'b';
+          setCookie(cookieName, variant, testDuration);
+        }
+      }
+
+      // Show the appropriate variant
+      if (variant === 'a') {
+        document.getElementById('cta-variant-a').style.display = 'block';
+      } else {
+        document.getElementById('cta-variant-b').style.display = 'block';
+      }
+
+      // Track variant impression
+      trackEvent('ab_test_impression', {
+        test_name: 'hero-cta-placement',
+        variant: variant,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Run A/B test on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initABTest);
+    } else {
+      initABTest();
+    }
+  </script>
  </body>
 </html>
