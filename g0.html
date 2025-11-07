@@ -608,9 +608,138 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: navigation-cta-visibility - Custom styles for Contribute button */
+.md-header__contribute {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.md-header__contribute .md-button {
+  font-size: 0.7rem;
+  padding: 0.4rem 1rem;
+  white-space: nowrap;
+  line-height: 1.2;
+  height: auto;
+  min-height: 1.8rem;
+}
+
+/* Ensure button is visible on larger screens */
+@media screen and (min-width: 60em) {
+  .md-header__contribute {
+    display: inline-flex;
+  }
+}
+
+/* Hide on smaller screens to prevent crowding */
+@media screen and (max-width: 59.984375em) {
+  .md-header__contribute {
+    display: none !important;
+  }
+}
+
+/* Adjust header layout to accommodate the button */
+.md-header__inner {
+  flex-wrap: nowrap;
+}
+
+.md-header__source {
+  flex-shrink: 0;
+}
   </style>
  </head>
  <body dir="ltr">
+  <!--
+  ==================================================================================
+  A/B Test: navigation-cta-visibility
+  ==================================================================================
+
+  PURPOSE:
+  Test adding a prominent call-to-action button in the navigation header to
+  encourage GitHub contributions. This documentation site discusses crosschain
+  security but lacks a clear prompt for community contribution, which is
+  explicitly mentioned as a goal in the introduction.
+
+  HYPOTHESIS:
+  Making the contribution CTA more prominent will increase GitHub engagement
+  (stars, forks, pull requests) compared to the existing subtle GitHub
+  repository link.
+
+  IMPLEMENTATION:
+  - Added a "Contribute" button next to the GitHub source link in the header
+  - Uses Material Design's md-button and md-button--primary classes
+  - Button is only visible on desktop (min-width: 60em) to avoid crowding
+  - Feature flag controlled via window.abTestConfig
+
+  TRACKING:
+  - Button impressions (when shown to users)
+  - Clicks on the new Contribute button
+  - Clicks on the existing GitHub repository link (for comparison)
+  - Events stored in localStorage and logged to console
+
+  CONFIGURATION:
+  To switch between variants, modify window.abTestConfig:
+    - variant: 'control'   = Hide the Contribute button (baseline)
+    - variant: 'treatment' = Show the Contribute button (test)
+
+  METRICS TO TRACK:
+  - Click-through rate on Contribute button vs GitHub link
+  - GitHub repository stars, forks, and pull requests
+  - Time to first contribution after page visit
+
+  FILES MODIFIED:
+  - g0.html (lines around 612-650, 721-763)
+  ==================================================================================
+  -->
+
+  <!-- A/B Test Configuration: navigation-cta-visibility -->
+  <script>
+    // A/B Test: navigation-cta-visibility
+    // Description: Test adding a prominent call-to-action button in the navigation header
+    // to encourage GitHub contributions.
+    //
+    // Feature flag configuration
+    window.abTestConfig = {
+      'navigation-cta-visibility': {
+        enabled: true,
+        variant: 'treatment', // Options: 'control' (hide button) or 'treatment' (show button)
+        trackingEnabled: true
+      }
+    };
+
+    // Helper function to check if A/B test is active
+    function isABTestActive(testName) {
+      return window.abTestConfig[testName] &&
+             window.abTestConfig[testName].enabled &&
+             window.abTestConfig[testName].variant === 'treatment';
+    }
+
+    // Event tracking function for A/B test
+    function trackABTestEvent(testName, eventType, target) {
+      if (!window.abTestConfig[testName] || !window.abTestConfig[testName].trackingEnabled) {
+        return;
+      }
+
+      const event = {
+        test: testName,
+        variant: window.abTestConfig[testName].variant,
+        eventType: eventType,
+        target: target,
+        timestamp: new Date().toISOString()
+      };
+
+      // Log to console (in production, this would send to analytics service)
+      console.log('[A/B Test Event]', event);
+
+      // Store in localStorage for tracking
+      const storageKey = 'ab_test_events_' + testName;
+      const events = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      events.push(event);
+      localStorage.setItem(storageKey, JSON.stringify(events));
+    }
+  </script>
+
   <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox">
   <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox">
   <label class="md-overlay" for="__drawer">
@@ -671,7 +800,7 @@
      </div>
     </div>
     <div class="md-header__source">
-     <a class="md-source" data-md-component="source" title="Go to repository">
+     <a class="md-source" data-md-component="source" title="Go to repository" id="github-source-link" onclick="trackABTestEvent('navigation-cta-visibility', 'click', 'github-source-link')">
       <div class="md-source__icon md-icon">
       </div>
       <div class="md-source__repository md-source__repository--active">
@@ -687,6 +816,33 @@
       </div>
      </a>
     </div>
+    <!-- A/B Test: navigation-cta-visibility - Contribute Button -->
+    <div class="md-header__contribute" id="contribute-button-container" style="margin-left: 0.5rem;">
+     <a href="https://github.com/crosschainriskframework/crosschainriskframework.github.io"
+        class="md-button md-button--primary"
+        id="contribute-cta-button"
+        title="Contribute to the Crosschain Risk Framework"
+        target="_blank"
+        rel="noopener"
+        style="font-size: 0.7rem; padding: 0.4rem 1rem; white-space: nowrap;"
+        onclick="trackABTestEvent('navigation-cta-visibility', 'click', 'contribute-cta-button')">
+      Contribute
+     </a>
+    </div>
+    <script>
+      // A/B Test: Show/hide contribute button based on feature flag
+      document.addEventListener('DOMContentLoaded', function() {
+        const contributeContainer = document.getElementById('contribute-button-container');
+        if (contributeContainer) {
+          if (isABTestActive('navigation-cta-visibility')) {
+            contributeContainer.style.display = 'block';
+            trackABTestEvent('navigation-cta-visibility', 'impression', 'contribute-cta-button');
+          } else {
+            contributeContainer.style.display = 'none';
+          }
+        }
+      });
+    </script>
    </nav>
   </header>
   <div class="md-container" data-md-component="container">
