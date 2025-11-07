@@ -796,6 +796,32 @@
        <p>
         While this document is still a work in progress, its ultimate objective is to enable progress toward more secure, robust, and decentralized crosschain protocols that can serve as solid foundations for a multichain future. We highly encourage contributions and feedback from the community towards this end.
        </p>
+
+       <!-- A/B Test: cta-github-button-position -->
+       <!-- Variant B: Prominent GitHub CTA -->
+       <div id="github-cta-variant-b" class="github-cta-banner" style="display: none;">
+        <div style="background: linear-gradient(135deg, var(--md-primary-fg-color--light) 0%, var(--md-primary-fg-color) 100%); border-radius: 0.2rem; padding: 1.5rem; margin: 2rem 0; text-align: center; box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.1);">
+         <h3 style="color: var(--md-primary-bg-color); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.2rem;">
+          Help Improve This Framework
+         </h3>
+         <p style="color: var(--md-primary-bg-color--light); margin-bottom: 1rem; font-size: 0.9rem;">
+          Your contributions and feedback are essential to making crosschain protocols more secure for everyone.
+         </p>
+         <a href="https://github.com/crosschain-alliance/crosschain-risk-framework"
+            class="md-button md-button--primary github-cta-link"
+            target="_blank"
+            rel="noopener"
+            data-ab-test="cta-github-button-position"
+            data-ab-variant="b"
+            style="background-color: var(--md-primary-bg-color); color: var(--md-primary-fg-color); font-size: 1rem; padding: 0.75rem 2.5rem; margin: 0 0.5rem; display: inline-block;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" style="width: 1.2em; height: 1.2em; vertical-align: text-bottom; margin-right: 0.4rem; fill: currentColor;">
+           <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+          </svg>
+          Contribute on GitHub
+         </a>
+        </div>
+       </div>
+       <!-- End A/B Test Variant B -->
        <h2 id="types-of-crosschain-interaction">
         Types of Crosschain Interaction
        </h2>
@@ -987,5 +1013,208 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: cta-github-button-position -->
+  <script>
+  (function() {
+    'use strict';
+
+    /**
+     * A/B Test Configuration
+     * Test Name: cta-github-button-position
+     * Description: Tests whether a prominent GitHub CTA button in the main content
+     *              increases engagement compared to only having the link in the header
+     * Variants:
+     *   - A (control): GitHub link only in header (current design)
+     *   - B (treatment): Prominent CTA banner after introduction paragraph
+     */
+    const AB_TEST_CONFIG = {
+      testName: 'cta-github-button-position',
+      cookieName: 'ab_test_cta_github_position',
+      cookieDuration: 30, // days
+      variants: {
+        A: 'control',      // Header link only
+        B: 'treatment'     // Prominent CTA banner
+      },
+      // Traffic allocation: 50/50 split
+      trafficAllocation: {
+        A: 0.5,
+        B: 0.5
+      }
+    };
+
+    /**
+     * Get or set A/B test variant for the user
+     * Uses cookie-based persistence to ensure consistent experience
+     */
+    function getOrAssignVariant() {
+      // Check for existing variant assignment in cookie
+      const cookieMatch = document.cookie.match(new RegExp('(^| )' + AB_TEST_CONFIG.cookieName + '=([^;]+)'));
+      if (cookieMatch) {
+        return cookieMatch[2];
+      }
+
+      // Assign new variant based on traffic allocation
+      const random = Math.random();
+      const variant = random < AB_TEST_CONFIG.trafficAllocation.A ? 'A' : 'B';
+
+      // Store variant in cookie
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + AB_TEST_CONFIG.cookieDuration);
+      document.cookie = AB_TEST_CONFIG.cookieName + '=' + variant + '; expires=' + expiryDate.toUTCString() + '; path=/; SameSite=Lax';
+
+      return variant;
+    }
+
+    /**
+     * Track A/B test events (page view, click, etc.)
+     * Integrates with analytics systems
+     */
+    function trackEvent(eventName, eventData) {
+      const eventPayload = {
+        test_name: AB_TEST_CONFIG.testName,
+        variant: eventData.variant,
+        event_name: eventName,
+        timestamp: new Date().toISOString(),
+        ...eventData
+      };
+
+      // Integration with Google Analytics (gtag)
+      if (typeof gtag !== 'undefined') {
+        gtag('event', eventName, {
+          event_category: 'AB_Test',
+          event_label: AB_TEST_CONFIG.testName,
+          ab_test_variant: eventData.variant,
+          ...eventData
+        });
+      }
+
+      // Integration with Google Analytics (ga)
+      if (typeof ga !== 'undefined') {
+        ga('send', 'event', 'AB_Test', eventName, AB_TEST_CONFIG.testName + '_' + eventData.variant);
+      }
+
+      // Console logging for debugging (remove in production)
+      console.log('[A/B Test]', eventName, eventPayload);
+
+      // Custom analytics endpoint (replace with your actual endpoint)
+      if (window.fetch) {
+        fetch('/api/analytics/ab-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(eventPayload)
+        }).catch(function(err) {
+          console.error('[A/B Test] Failed to send analytics:', err);
+        });
+      }
+    }
+
+    /**
+     * Apply the assigned variant
+     */
+    function applyVariant(variant) {
+      if (variant === 'B') {
+        // Show the prominent CTA banner
+        const ctaBanner = document.getElementById('github-cta-variant-b');
+        if (ctaBanner) {
+          ctaBanner.style.display = 'block';
+        }
+      }
+      // Variant A doesn't require changes (default state)
+
+      // Track exposure to the variant
+      trackEvent('variant_exposed', { variant: variant });
+    }
+
+    /**
+     * Track clicks on GitHub links
+     */
+    function setupClickTracking(variant) {
+      // Track clicks on variant B CTA button
+      const variantBLinks = document.querySelectorAll('[data-ab-test="' + AB_TEST_CONFIG.testName + '"][data-ab-variant="b"]');
+      variantBLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          trackEvent('cta_clicked', {
+            variant: 'B',
+            link_location: 'main_content_banner',
+            link_url: link.href
+          });
+        });
+      });
+
+      // Track clicks on header GitHub link (variant A)
+      const headerGitHubLinks = document.querySelectorAll('.md-header__source .md-source');
+      headerGitHubLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          trackEvent('github_link_clicked', {
+            variant: variant,
+            link_location: 'header',
+            link_url: link.href
+          });
+        });
+      });
+
+      // Track clicks on any other GitHub links in the content
+      const contentGitHubLinks = document.querySelectorAll('article a[href*="github.com"]');
+      contentGitHubLinks.forEach(function(link) {
+        // Skip if already tracked
+        if (link.dataset.abTest) return;
+
+        link.addEventListener('click', function(e) {
+          trackEvent('github_link_clicked', {
+            variant: variant,
+            link_location: 'content',
+            link_url: link.href
+          });
+        });
+      });
+    }
+
+    /**
+     * Initialize A/B test
+     */
+    function initABTest() {
+      // Get or assign variant
+      const variant = getOrAssignVariant();
+
+      // Apply the variant
+      applyVariant(variant);
+
+      // Setup click tracking
+      setupClickTracking(variant);
+
+      // Track scroll depth (engagement metric)
+      let maxScrollDepth = 0;
+      window.addEventListener('scroll', function() {
+        const scrollDepth = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+        if (scrollDepth > maxScrollDepth) {
+          maxScrollDepth = scrollDepth;
+          if (maxScrollDepth >= 25 && maxScrollDepth < 30) {
+            trackEvent('scroll_depth_25', { variant: variant, scroll_depth: maxScrollDepth });
+          } else if (maxScrollDepth >= 50 && maxScrollDepth < 55) {
+            trackEvent('scroll_depth_50', { variant: variant, scroll_depth: maxScrollDepth });
+          } else if (maxScrollDepth >= 75 && maxScrollDepth < 80) {
+            trackEvent('scroll_depth_75', { variant: variant, scroll_depth: maxScrollDepth });
+          } else if (maxScrollDepth >= 90) {
+            trackEvent('scroll_depth_100', { variant: variant, scroll_depth: maxScrollDepth });
+          }
+        }
+      });
+
+      // Add variant class to body for CSS targeting if needed
+      document.body.classList.add('ab-test-' + variant.toLowerCase());
+      document.body.setAttribute('data-ab-variant', variant);
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initABTest);
+    } else {
+      initABTest();
+    }
+  })();
+  </script>
+  <!-- End A/B Test Script -->
+
  </body>
 </html>
