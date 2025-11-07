@@ -824,6 +824,13 @@
        <p>
         General-purpose messaging refers to the communication of any data across chains. It can enable asset exchanges and transfers but also orchestrate complex application behavior across chains for a broad range of use cases.
        </p>
+       <!-- A/B Test: risk-section-order-test -->
+       <!-- Control (A): Stakeholders first, then Security Risks -->
+       <!-- Treatment (B): Security Risks first, then Stakeholders -->
+       <div id="section-container" data-ab-test="risk-section-order-test">
+
+       <!-- Section 1: Stakeholders (order depends on variant) -->
+       <div id="stakeholders-section" class="ab-test-section" data-section="stakeholders" data-order-control="1" data-order-treatment="2">
        <h2 id="stakeholders">
         Stakeholders
        </h2>
@@ -915,6 +922,10 @@
        <p>
         For brevity, the rest of this document primarily focuses only on direct stakeholders of crosschain protocols.
        </p>
+       </div>
+
+       <!-- Section 2: Security Risks (order depends on variant) -->
+       <div id="security-risks-section" class="ab-test-section" data-section="security-risks" data-order-control="2" data-order-treatment="1">
        <h2 id="security-risks">
         Security Risks
        </h2>
@@ -951,6 +962,10 @@
        <p>
         This document primarily discusses and assesses the risk of crosschain protocols by considering factors that affect these core security requirements.
        </p>
+       </div>
+
+       </div>
+       <!-- End A/B Test: risk-section-order-test -->
        <!-- END INCLUDE -->
        <hr>
        <div class="md-source-file">
@@ -987,5 +1002,349 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test Script for risk-section-order-test -->
+  <script>
+  (function() {
+    'use strict';
+
+    /**
+     * A/B Test: risk-section-order-test
+     *
+     * Test Name: Risk Section Order Test
+     * Description: Test whether presenting stakeholder impacts before technical risk
+     *              details improves user engagement and comprehension.
+     *
+     * Variants:
+     *   - control (A): Stakeholders section first, then Security Risks section
+     *   - treatment (B): Security Risks section first, then Stakeholders section
+     *
+     * Metrics tracked:
+     *   - Time on page
+     *   - Scroll depth
+     *   - Bounce rate (via exit intent)
+     *   - Section visibility time
+     *
+     * Configuration:
+     *   - Test can be forced via URL parameter: ?ab_test_variant=control or ?ab_test_variant=treatment
+     *   - Otherwise, users are randomly assigned to a variant (50/50 split)
+     *   - Variant assignment is stored in localStorage for consistency
+     */
+
+    const TEST_NAME = 'risk-section-order-test';
+    const STORAGE_KEY = 'ab_test_' + TEST_NAME;
+
+    // A/B Test Configuration
+    const config = {
+      testName: TEST_NAME,
+      variants: {
+        control: 'control',      // Original order: Stakeholders first
+        treatment: 'treatment'   // New order: Security Risks first
+      },
+      storageKey: STORAGE_KEY,
+      trackingEnabled: true
+    };
+
+    // Utility functions
+    function getUrlParameter(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    function getStoredVariant() {
+      try {
+        return localStorage.getItem(config.storageKey);
+      } catch (e) {
+        console.warn('localStorage not available:', e);
+        return null;
+      }
+    }
+
+    function storeVariant(variant) {
+      try {
+        localStorage.setItem(config.storageKey, variant);
+      } catch (e) {
+        console.warn('Could not store variant:', e);
+      }
+    }
+
+    function assignVariant() {
+      // Check for URL parameter override
+      const urlVariant = getUrlParameter('ab_test_variant');
+      if (urlVariant && (urlVariant === 'control' || urlVariant === 'treatment')) {
+        return urlVariant;
+      }
+
+      // Check for stored variant
+      const storedVariant = getStoredVariant();
+      if (storedVariant && (storedVariant === 'control' || storedVariant === 'treatment')) {
+        return storedVariant;
+      }
+
+      // Assign random variant (50/50 split)
+      const variant = Math.random() < 0.5 ? 'control' : 'treatment';
+      storeVariant(variant);
+      return variant;
+    }
+
+    function applySectionOrder(variant) {
+      const container = document.getElementById('section-container');
+      if (!container) {
+        console.error('Section container not found');
+        return;
+      }
+
+      const sections = container.querySelectorAll('.ab-test-section');
+      if (sections.length !== 2) {
+        console.error('Expected 2 sections, found:', sections.length);
+        return;
+      }
+
+      // Get the order for this variant
+      const orderAttr = variant === 'control' ? 'data-order-control' : 'data-order-treatment';
+
+      // Create array of sections with their order
+      const sectionsArray = Array.from(sections).map(section => ({
+        element: section,
+        order: parseInt(section.getAttribute(orderAttr), 10)
+      }));
+
+      // Sort by order
+      sectionsArray.sort((a, b) => a.order - b.order);
+
+      // Reorder sections in the DOM
+      sectionsArray.forEach(item => {
+        container.appendChild(item.element);
+      });
+
+      // Add variant class to container for CSS styling if needed
+      container.setAttribute('data-variant', variant);
+
+      console.log('A/B Test applied:', TEST_NAME, 'Variant:', variant);
+    }
+
+    // Analytics and tracking functions
+    const analytics = {
+      sessionId: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+      variant: null,
+      startTime: Date.now(),
+      maxScrollDepth: 0,
+      sectionVisibility: {},
+      events: [],
+
+      init: function(variant) {
+        this.variant = variant;
+        this.trackPageLoad();
+        this.setupScrollTracking();
+        this.setupTimeTracking();
+        this.setupSectionVisibility();
+        this.setupExitIntent();
+      },
+
+      trackPageLoad: function() {
+        this.logEvent('page_load', {
+          url: window.location.href,
+          referrer: document.referrer
+        });
+      },
+
+      setupScrollTracking: function() {
+        let ticking = false;
+        const self = this;
+
+        window.addEventListener('scroll', function() {
+          if (!ticking) {
+            window.requestAnimationFrame(function() {
+              const scrollPercentage = Math.round(
+                (window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100
+              );
+
+              if (scrollPercentage > self.maxScrollDepth) {
+                self.maxScrollDepth = scrollPercentage;
+                self.logEvent('scroll_depth', { depth: scrollPercentage });
+              }
+
+              ticking = false;
+            });
+            ticking = true;
+          }
+        });
+      },
+
+      setupTimeTracking: function() {
+        const self = this;
+
+        // Track time at key intervals
+        [10, 30, 60, 120, 300].forEach(seconds => {
+          setTimeout(() => {
+            self.logEvent('time_on_page', { seconds: seconds });
+          }, seconds * 1000);
+        });
+      },
+
+      setupSectionVisibility: function() {
+        const self = this;
+        const sections = document.querySelectorAll('.ab-test-section');
+
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              const sectionId = entry.target.getAttribute('data-section');
+
+              if (entry.isIntersecting) {
+                if (!self.sectionVisibility[sectionId]) {
+                  self.sectionVisibility[sectionId] = {
+                    firstView: Date.now(),
+                    totalTime: 0,
+                    viewCount: 0
+                  };
+                }
+                self.sectionVisibility[sectionId].lastEnter = Date.now();
+                self.sectionVisibility[sectionId].viewCount++;
+
+                self.logEvent('section_view', {
+                  section: sectionId,
+                  viewCount: self.sectionVisibility[sectionId].viewCount
+                });
+              } else {
+                if (self.sectionVisibility[sectionId] && self.sectionVisibility[sectionId].lastEnter) {
+                  const timeSpent = Date.now() - self.sectionVisibility[sectionId].lastEnter;
+                  self.sectionVisibility[sectionId].totalTime += timeSpent;
+                  self.sectionVisibility[sectionId].lastEnter = null;
+
+                  self.logEvent('section_exit', {
+                    section: sectionId,
+                    timeSpent: Math.round(timeSpent / 1000)
+                  });
+                }
+              }
+            });
+          }, { threshold: [0.1, 0.5, 0.9] });
+
+          sections.forEach(section => observer.observe(section));
+        }
+      },
+
+      setupExitIntent: function() {
+        const self = this;
+        let exitLogged = false;
+
+        document.addEventListener('visibilitychange', function() {
+          if (document.hidden && !exitLogged) {
+            self.trackExit();
+            exitLogged = true;
+          }
+        });
+
+        window.addEventListener('beforeunload', function() {
+          if (!exitLogged) {
+            self.trackExit();
+            exitLogged = true;
+          }
+        });
+      },
+
+      trackExit: function() {
+        const timeOnPage = Math.round((Date.now() - this.startTime) / 1000);
+
+        this.logEvent('page_exit', {
+          timeOnPage: timeOnPage,
+          maxScrollDepth: this.maxScrollDepth,
+          bounced: this.maxScrollDepth < 25 && timeOnPage < 10
+        });
+
+        // Send final analytics
+        this.sendAnalytics();
+      },
+
+      logEvent: function(eventName, data) {
+        const event = {
+          timestamp: Date.now(),
+          event: eventName,
+          variant: this.variant,
+          testName: TEST_NAME,
+          sessionId: this.sessionId,
+          data: data
+        };
+
+        this.events.push(event);
+
+        if (config.trackingEnabled) {
+          console.log('[A/B Test Event]', event);
+        }
+      },
+
+      sendAnalytics: function() {
+        // This is where you would send data to your analytics service
+        // For example: Google Analytics, Mixpanel, Amplitude, etc.
+
+        const analyticsData = {
+          testName: TEST_NAME,
+          variant: this.variant,
+          sessionId: this.sessionId,
+          summary: {
+            timeOnPage: Math.round((Date.now() - this.startTime) / 1000),
+            maxScrollDepth: this.maxScrollDepth,
+            sectionVisibility: this.sectionVisibility
+          },
+          events: this.events
+        };
+
+        if (config.trackingEnabled) {
+          console.log('[A/B Test Summary]', analyticsData);
+        }
+
+        // Example: Send to Google Analytics
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'ab_test_complete', {
+            'event_category': 'AB_Test',
+            'event_label': TEST_NAME,
+            'variant': this.variant,
+            'time_on_page': analyticsData.summary.timeOnPage,
+            'max_scroll_depth': this.maxScrollDepth
+          });
+        }
+
+        // Example: Send to custom endpoint
+        // navigator.sendBeacon('/api/ab-test-analytics', JSON.stringify(analyticsData));
+
+        // Store in localStorage for debugging/analysis
+        try {
+          const storageKey = STORAGE_KEY + '_analytics_' + this.sessionId;
+          localStorage.setItem(storageKey, JSON.stringify(analyticsData));
+        } catch (e) {
+          console.warn('Could not store analytics data:', e);
+        }
+      }
+    };
+
+    // Initialize A/B test
+    function init() {
+      // Assign variant
+      const variant = assignVariant();
+
+      // Apply section order
+      applySectionOrder(variant);
+
+      // Initialize analytics
+      if (config.trackingEnabled) {
+        analytics.init(variant);
+      }
+
+      // Add variant info to body for debugging
+      document.body.setAttribute('data-ab-test', TEST_NAME);
+      document.body.setAttribute('data-ab-variant', variant);
+    }
+
+    // Run on DOM ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+  })();
+  </script>
+
  </body>
 </html>
