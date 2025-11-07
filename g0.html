@@ -796,6 +796,116 @@
        <p>
         While this document is still a work in progress, its ultimate objective is to enable progress toward more secure, robust, and decentralized crosschain protocols that can serve as solid foundations for a multichain future. We highly encourage contributions and feedback from the community towards this end.
        </p>
+
+       <!-- A/B Test: hero-cta-button -->
+       <!-- Test Description: Comparing conversion rates between plain text links (control) vs.
+            prominent CTA button (variant) to increase engagement with the GitHub repository.
+            Tracking: Monitor click-through rates on data-ab-test="hero-cta-button" elements -->
+
+       <!-- Variant A: Prominent CTA Button (shown when ab_test_hero_cta === 'variant') -->
+       <div class="md-typeset" data-ab-test="hero-cta-button" data-ab-variant="button" style="margin: 2em 0; text-align: center;">
+        <a href="https://github.com/crosschain-risk-framework/crosschain-risk-framework"
+           class="md-button md-button--primary"
+           target="_blank"
+           rel="noopener"
+           data-track-event="cta-click"
+           data-track-label="contribute-github"
+           style="font-size: 0.8rem; padding: 0.8em 2.5em; display: inline-block; margin: 0.5em;">
+          Contribute on GitHub
+        </a>
+        <a href="#introduction"
+           class="md-button md-button--primary"
+           data-track-event="cta-click"
+           data-track-label="view-framework"
+           style="font-size: 0.8rem; padding: 0.8em 2.5em; display: inline-block; margin: 0.5em;">
+          View Risk Framework
+        </a>
+       </div>
+
+       <!-- Variant B: Control - Plain text links (shown when ab_test_hero_cta === 'control') -->
+       <!-- Original implementation uses inline links within paragraph text -->
+       <div class="md-typeset" data-ab-test="hero-cta-button" data-ab-variant="control" style="display: none; margin: 1.5em 0; text-align: center; font-size: 0.7rem; color: var(--md-default-fg-color--light);">
+        <p>
+         <a href="https://github.com/crosschain-risk-framework/crosschain-risk-framework"
+            target="_blank"
+            rel="noopener"
+            data-track-event="cta-click"
+            data-track-label="contribute-github-control">
+          Contribute on GitHub
+         </a>
+         or
+         <a href="#introduction"
+            data-track-event="cta-click"
+            data-track-label="view-framework-control">
+          explore the framework
+         </a>
+        </p>
+       </div>
+
+       <!-- A/B Test Implementation Script -->
+       <script>
+        (function() {
+          // A/B Test Configuration
+          const AB_TEST_NAME = 'hero-cta-button';
+          const STORAGE_KEY = 'ab_test_' + AB_TEST_NAME;
+
+          // Get or assign variant (50/50 split)
+          let variant = localStorage.getItem(STORAGE_KEY);
+          if (!variant) {
+            variant = Math.random() < 0.5 ? 'button' : 'control';
+            localStorage.setItem(STORAGE_KEY, variant);
+
+            // Track variant assignment
+            if (window.gtag) {
+              gtag('event', 'ab_test_assigned', {
+                'test_name': AB_TEST_NAME,
+                'variant': variant
+              });
+            }
+          }
+
+          // Show appropriate variant
+          const elements = document.querySelectorAll('[data-ab-test="' + AB_TEST_NAME + '"]');
+          elements.forEach(function(el) {
+            const elVariant = el.getAttribute('data-ab-variant');
+            if (elVariant === variant) {
+              el.style.display = elVariant === 'button' ? 'block' : 'block';
+            } else {
+              el.style.display = 'none';
+            }
+          });
+
+          // Track page view with variant
+          if (window.gtag) {
+            gtag('event', 'page_view', {
+              'ab_test_hero_cta': variant
+            });
+          }
+
+          // Add click tracking to all CTA elements
+          document.addEventListener('click', function(e) {
+            const target = e.target.closest('[data-track-event="cta-click"]');
+            if (target) {
+              const label = target.getAttribute('data-track-label');
+              if (window.gtag) {
+                gtag('event', 'cta_click', {
+                  'event_category': 'ab_test',
+                  'event_label': label,
+                  'test_name': AB_TEST_NAME,
+                  'variant': variant
+                });
+              }
+              // Also log to console for debugging
+              console.log('A/B Test Click:', {
+                test: AB_TEST_NAME,
+                variant: variant,
+                label: label
+              });
+            }
+          });
+        })();
+       </script>
+
        <h2 id="types-of-crosschain-interaction">
         Types of Crosschain Interaction
        </h2>
