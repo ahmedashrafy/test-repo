@@ -1,4 +1,45 @@
 <!DOCTYPE html>
+<!--
+  A/B Test Implementation: cta-button-visibility
+
+  Test Name: CTA Button Visibility Test
+  Description: Testing prominent call-to-action button in header vs. minimal design
+
+  Variants:
+    - Variant A (Prominent CTA): CTA button is visible in the navigation header
+    - Variant B (Minimal Design): No CTA button (remove md-header__cta div or add md-header__cta--hidden class)
+
+  Implementation Details:
+    - CTA Button Location: Header navigation, after search functionality (around line 677)
+    - Button Text: "Get Started" (can be changed to "Learn More" or other CTAs)
+    - Target Link: #introduction (can be updated to point to key sections)
+    - Styling: Uses accent color (--md-accent-fg-color) for visual prominence
+    - Data Attributes:
+      * data-ab-test="cta-button-visibility" - identifies the test
+      * data-ab-variant="prominent-cta" - identifies the variant
+
+  Metrics to Track:
+    - Click-through rate (CTR) on the CTA button
+    - Time to first interaction with documentation
+    - Scroll depth / engagement with content sections
+    - Bounce rate comparison between variants
+
+  How to Toggle Variants:
+    - For Variant A (CTA visible): Keep the implementation as-is
+    - For Variant B (No CTA): Add class "md-header__cta--hidden" to the div.md-header__cta element
+      OR remove the entire <div class="md-header__cta">...</div> block
+
+  Analytics Integration:
+    - Add event tracking to capture button clicks
+    - Use the data-ab-test and data-ab-variant attributes for segmentation
+    - Example: Google Analytics, Mixpanel, or custom analytics solution
+
+  Notes:
+    - Button is hidden on mobile devices (screens < 60em) to prevent header crowding
+    - Button uses Material Design color scheme for consistency
+    - Includes hover and focus states for accessibility
+    - Can be easily customized by modifying CSS variables or button text
+-->
 <html class="js-focus-visible js" data-js-focus-visible lang="en">
  <head>
   <meta charset="utf-8">
@@ -608,6 +649,58 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: CTA Button Visibility Styles */
+/* Test variant: Prominent call-to-action button in header */
+.md-header__cta {
+  display: flex;
+  align-items: center;
+  margin: 0 0.4rem;
+}
+
+.md-header__cta-button {
+  background-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.2rem;
+  text-decoration: none;
+  transition: background-color 0.25s, transform 0.15s, box-shadow 0.25s;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  outline-color: var(--md-accent-fg-color);
+  outline-offset: 0.1rem;
+}
+
+.md-header__cta-button:hover {
+  background-color: var(--md-accent-fg-color--dark, #303fa1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  color: var(--md-accent-bg-color);
+}
+
+.md-header__cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.md-header__cta-button:focus {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 0.2rem;
+}
+
+/* Responsive behavior - hide on smaller screens to avoid crowding */
+@media screen and (max-width: 59.984375em) {
+  .md-header__cta {
+    display: none;
+  }
+}
+
+/* For A/B testing control variant - add this class to hide the button */
+.md-header__cta--hidden {
+  display: none !important;
+}
   </style>
  </head>
  <body dir="ltr">
@@ -669,6 +762,15 @@
        </div>
       </div>
      </div>
+    </div>
+    <!-- A/B Test: cta-button-visibility -->
+    <!-- Test: Prominent CTA button vs. minimal design -->
+    <!-- Variant A: CTA button visible (this implementation) -->
+    <!-- Variant B: No CTA button (remove or hide this element) -->
+    <div class="md-header__cta">
+     <a class="md-header__cta-button" href="#introduction" title="Get Started with Crosschain Risk Framework" data-ab-test="cta-button-visibility" data-ab-variant="prominent-cta">
+      Get Started
+     </a>
     </div>
     <div class="md-header__source">
      <a class="md-source" data-md-component="source" title="Go to repository">
@@ -987,5 +1089,47 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: Click Tracking Script -->
+  <script>
+    // CTA Button Click Tracking for A/B Test: cta-button-visibility
+    // This script tracks clicks on the CTA button for analytics purposes
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const ctaButton = document.querySelector('[data-ab-test="cta-button-visibility"]');
+
+      if (ctaButton) {
+        ctaButton.addEventListener('click', function(event) {
+          // Track the click event
+          // Replace this with your actual analytics implementation
+
+          // Example: Google Analytics
+          if (typeof gtag !== 'undefined') {
+            gtag('event', 'click', {
+              'event_category': 'A/B Test',
+              'event_label': 'CTA Button - ' + this.dataset.abVariant,
+              'value': 1
+            });
+          }
+
+          // Example: Custom analytics
+          if (typeof trackEvent !== 'undefined') {
+            trackEvent('ab_test_cta_click', {
+              test_name: this.dataset.abTest,
+              variant: this.dataset.abVariant,
+              timestamp: new Date().toISOString()
+            });
+          }
+
+          // Console log for debugging (remove in production)
+          console.log('A/B Test CTA Button clicked:', {
+            test: this.dataset.abTest,
+            variant: this.dataset.abVariant,
+            href: this.href
+          });
+        });
+      }
+    });
+  </script>
  </body>
 </html>
