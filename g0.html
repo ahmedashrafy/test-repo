@@ -608,6 +608,58 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: Call-to-Action Button Styles */
+.ab-test-cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.25s, transform 0.15s;
+  margin-left: 0.8rem;
+  white-space: nowrap;
+}
+
+.ab-test-cta-button:hover {
+  background-color: var(--md-primary-fg-color--light);
+  transform: translateY(-1px);
+  color: var(--md-accent-bg-color);
+}
+
+.ab-test-cta-button:active {
+  transform: translateY(0);
+}
+
+/* Hide button by default (control group) */
+.ab-test-cta-button {
+  display: none;
+}
+
+/* Show button for treatment group */
+.ab-test-variant-treatment .ab-test-cta-button {
+  display: inline-flex;
+}
+
+/* Responsive design */
+@media screen and (max-width: 60em) {
+  .ab-test-cta-button {
+    font-size: 0.65rem;
+    padding: 0.4rem 1rem;
+    margin-left: 0.4rem;
+  }
+}
+
+@media screen and (max-width: 45em) {
+  .ab-test-cta-button {
+    display: none !important; /* Hide on mobile for all variants */
+  }
+}
   </style>
  </head>
  <body dir="ltr">
@@ -687,6 +739,17 @@
       </div>
      </a>
     </div>
+    <!-- A/B Test: Call-to-Action Button (Treatment Variant Only) -->
+    <a
+      href="https://github.com/runtimeverification/crosschain-security-framework"
+      class="ab-test-cta-button"
+      target="_blank"
+      rel="noopener noreferrer"
+      data-ab-test="cta-button"
+      aria-label="Contribute to the Crosschain Risk Framework on GitHub"
+    >
+      <span>Contribute</span>
+    </a>
    </nav>
   </header>
   <div class="md-container" data-md-component="container">
@@ -987,5 +1050,165 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: Call-to-Action Button Implementation -->
+  <script>
+    (function() {
+      'use strict';
+
+      /**
+       * A/B Test Configuration
+       * Test Name: call-to-action-button
+       * Description: Test the impact of a prominent "Contribute to Framework" CTA button
+       * in the header on community engagement
+       *
+       * Variants:
+       * - control: No CTA button (default)
+       * - treatment: Show "Contribute" button in header
+       *
+       * Success Metrics:
+       * - Track clicks to GitHub repository
+       * - Measure increase in GitHub stars
+       * - Monitor new contributions/pull requests
+       */
+
+      const AB_TEST_CONFIG = {
+        testName: 'call-to-action-button',
+        variants: {
+          control: 'control',
+          treatment: 'treatment'
+        },
+        // 50/50 split between control and treatment
+        treatmentProbability: 0.5
+      };
+
+      /**
+       * Get or create a persistent user ID for the A/B test
+       * Uses localStorage to ensure consistent experience across sessions
+       */
+      function getUserId() {
+        let userId = localStorage.getItem('ab_test_user_id');
+        if (!userId) {
+          userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          localStorage.setItem('ab_test_user_id', userId);
+        }
+        return userId;
+      }
+
+      /**
+       * Assign user to a variant based on consistent hashing
+       * This ensures the same user always sees the same variant
+       */
+      function assignVariant(userId) {
+        // Check if user already has an assigned variant
+        let assignedVariant = localStorage.getItem('ab_test_' + AB_TEST_CONFIG.testName);
+
+        if (!assignedVariant) {
+          // Simple hash function to determine variant
+          let hash = 0;
+          for (let i = 0; i < userId.length; i++) {
+            hash = ((hash << 5) - hash) + userId.charCodeAt(i);
+            hash = hash & hash; // Convert to 32-bit integer
+          }
+
+          // Use hash to assign variant consistently
+          const normalizedHash = Math.abs(hash) / Math.pow(2, 31);
+          assignedVariant = normalizedHash < AB_TEST_CONFIG.treatmentProbability
+            ? AB_TEST_CONFIG.variants.treatment
+            : AB_TEST_CONFIG.variants.control;
+
+          // Store variant assignment
+          localStorage.setItem('ab_test_' + AB_TEST_CONFIG.testName, assignedVariant);
+        }
+
+        return assignedVariant;
+      }
+
+      /**
+       * Track analytics events
+       * TODO: Replace with your analytics provider (e.g., Google Analytics, Mixpanel, Segment)
+       */
+      function trackEvent(eventName, properties) {
+        console.log('[A/B Test Analytics]', eventName, properties);
+
+        // Example: Google Analytics
+        // if (window.gtag) {
+        //   gtag('event', eventName, properties);
+        // }
+
+        // Example: Mixpanel
+        // if (window.mixpanel) {
+        //   mixpanel.track(eventName, properties);
+        // }
+
+        // Example: Segment
+        // if (window.analytics) {
+        //   analytics.track(eventName, properties);
+        // }
+      }
+
+      /**
+       * Initialize A/B test
+       */
+      function initABTest() {
+        const userId = getUserId();
+        const variant = assignVariant(userId);
+
+        // Apply variant class to body
+        if (variant === AB_TEST_CONFIG.variants.treatment) {
+          document.body.classList.add('ab-test-variant-treatment');
+        } else {
+          document.body.classList.add('ab-test-variant-control');
+        }
+
+        // Track test impression
+        trackEvent('ab_test_impression', {
+          test_name: AB_TEST_CONFIG.testName,
+          variant: variant,
+          user_id: userId,
+          timestamp: new Date().toISOString()
+        });
+
+        // Set up click tracking for CTA button
+        const ctaButton = document.querySelector('[data-ab-test="cta-button"]');
+        if (ctaButton && variant === AB_TEST_CONFIG.variants.treatment) {
+          ctaButton.addEventListener('click', function() {
+            trackEvent('ab_test_cta_click', {
+              test_name: AB_TEST_CONFIG.testName,
+              variant: variant,
+              user_id: userId,
+              button_text: this.textContent.trim(),
+              href: this.href,
+              timestamp: new Date().toISOString()
+            });
+          });
+        }
+
+        // Log test assignment for debugging
+        console.log('[A/B Test] User assigned to variant:', variant);
+      }
+
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initABTest);
+      } else {
+        initABTest();
+      }
+
+      /**
+       * Optional: Expose utility function to manually override variant for testing
+       * Usage: window.setABTestVariant('treatment') or window.setABTestVariant('control')
+       */
+      window.setABTestVariant = function(variant) {
+        if (variant === 'control' || variant === 'treatment') {
+          localStorage.setItem('ab_test_' + AB_TEST_CONFIG.testName, variant);
+          location.reload();
+        } else {
+          console.error('Invalid variant. Use "control" or "treatment"');
+        }
+      };
+
+    })();
+  </script>
  </body>
 </html>
