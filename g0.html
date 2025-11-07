@@ -608,9 +608,242 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test Styles: hero-cta-placement */
+
+/* Variant A (Control): Normal header display, no hero section */
+body[data-ab-variant="A"] .ab-test-hero-section {
+  display: none !important;
+}
+
+body[data-ab-variant="A"] .ab-test-header-source {
+  display: block;
+}
+
+/* Variant B (Treatment): De-emphasized header, prominent hero section */
+body[data-ab-variant="B"] .ab-test-header-source {
+  opacity: 0.5;
+  transition: opacity 0.25s;
+}
+
+body[data-ab-variant="B"] .ab-test-header-source:hover {
+  opacity: 1;
+}
+
+body[data-ab-variant="B"] .ab-test-hero-section {
+  display: block !important;
+  margin: 0 0 2rem 0;
+}
+
+/* Hero CTA Section Styles */
+.hero-cta-container {
+  background: linear-gradient(135deg, var(--md-primary-fg-color) 0%, var(--md-primary-fg-color--dark) 100%);
+  border-radius: 0.5rem;
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.1), 0 0 0.05rem rgba(0,0,0,0.2);
+}
+
+.hero-cta-content {
+  max-width: 48rem;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--md-primary-bg-color);
+}
+
+.hero-cta-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  color: var(--md-primary-bg-color);
+  letter-spacing: -0.02em;
+}
+
+.hero-cta-description {
+  font-size: 1.1rem;
+  margin: 0 0 1.5rem 0;
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.hero-github-stats {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.hero-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.375rem;
+  backdrop-filter: blur(10px);
+}
+
+.hero-stat-icon {
+  opacity: 0.9;
+}
+
+.hero-stat-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero-stat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hero-cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--md-primary-bg-color);
+  color: var(--md-primary-fg-color);
+  padding: 0.875rem 2rem;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+}
+
+.hero-cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.375rem 0.75rem rgba(0,0,0,0.25);
+  color: var(--md-primary-fg-color);
+}
+
+.hero-button-icon {
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 44.984375em) {
+  .hero-cta-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .hero-cta-title {
+    font-size: 1.5rem;
+  }
+
+  .hero-cta-description {
+    font-size: 1rem;
+  }
+
+  .hero-github-stats {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .hero-stat-card {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
   </style>
  </head>
  <body dir="ltr">
+  <!--
+    ============================================================================
+    A/B TEST: hero-cta-placement
+    ============================================================================
+
+    Description:
+    Test moving the GitHub repository stats (stars/forks) from the header to a
+    more prominent hero section on the homepage to increase repository engagement
+    and star conversions.
+
+    Variants:
+    - Variant A (Control): Standard header display with GitHub stats in top-right
+    - Variant B (Treatment): De-emphasized header stats + prominent hero section
+                             with larger GitHub stats and call-to-action button
+
+    Implementation:
+    - Random 50/50 split stored in localStorage for consistency
+    - Variant assignment persists across page visits
+    - Click tracking on all GitHub links (header, sidebar, hero)
+    - Analytics events logged to console and Google Analytics (if available)
+
+    Metrics to track:
+    - Click-through rate on GitHub links by variant
+    - Star conversion rate by variant
+    - Time to first GitHub interaction
+    - Overall engagement with repository
+
+    Modified elements:
+    - Header GitHub source link (.ab-test-header-source)
+    - New hero section (.ab-test-hero-section)
+    - Tracking added to all GitHub links
+
+    CSS classes:
+    - body[data-ab-variant="A|B"] - Variant-specific styling
+    - .ab-test-header-source - Header GitHub stats container
+    - .ab-test-hero-section - Hero CTA section
+    - .hero-cta-* - Hero section component styles
+
+    ============================================================================
+  -->
+
+  <!-- A/B Test Configuration: hero-cta-placement -->
+  <script>
+    // A/B Test: hero-cta-placement
+    // Randomly assign user to variant A (control) or B (treatment)
+    (function() {
+      const TEST_NAME = 'hero-cta-placement';
+      const VARIANT_KEY = 'ab_test_' + TEST_NAME;
+
+      // Check if user already has a variant assigned
+      let variant = localStorage.getItem(VARIANT_KEY);
+
+      // If not, randomly assign variant (50/50 split)
+      if (!variant) {
+        variant = Math.random() < 0.5 ? 'A' : 'B';
+        localStorage.setItem(VARIANT_KEY, variant);
+      }
+
+      // Store variant in data attribute for styling and tracking
+      document.body.setAttribute('data-ab-variant', variant);
+
+      // Track variant assignment
+      console.log('[A/B Test] ' + TEST_NAME + ': Variant ' + variant);
+
+      // Helper function to track clicks
+      window.trackGitHubClick = function(location) {
+        console.log('[A/B Test] GitHub click tracked:', {
+          test: TEST_NAME,
+          variant: variant,
+          location: location,
+          timestamp: new Date().toISOString()
+        });
+
+        // Send to analytics (placeholder - replace with your analytics service)
+        if (window.gtag) {
+          gtag('event', 'github_click', {
+            'event_category': 'ab_test',
+            'event_label': TEST_NAME + '_' + variant + '_' + location,
+            'value': 1
+          });
+        }
+      };
+    })();
+  </script>
+
   <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox">
   <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox">
   <label class="md-overlay" for="__drawer">
@@ -670,8 +903,9 @@
       </div>
      </div>
     </div>
-    <div class="md-header__source">
-     <a class="md-source" data-md-component="source" title="Go to repository">
+    <!-- A/B Test: Header GitHub stats (Variant A: visible, Variant B: de-emphasized) -->
+    <div class="md-header__source ab-test-header-source">
+     <a class="md-source" data-md-component="source" title="Go to repository" onclick="trackGitHubClick('header')">
       <div class="md-source__icon md-icon">
       </div>
       <div class="md-source__repository md-source__repository--active">
@@ -702,7 +936,7 @@
           Crosschain Risk Framework
          </label>
          <div class="md-nav__source">
-          <a class="md-source" data-md-component="source" title="Go to repository">
+          <a class="md-source" data-md-component="source" title="Go to repository" onclick="trackGitHubClick('sidebar')">
            <div class="md-source__icon md-icon">
            </div>
            <div class="md-source__repository md-source__repository--active">
@@ -754,6 +988,48 @@
      </div>
      <div class="md-content" data-md-component="content">
       <article class="md-content__inner md-typeset">
+       <!-- A/B Test: Hero CTA Section (Variant B only) -->
+       <div class="ab-test-hero-section" style="display: none;">
+        <div class="hero-cta-container">
+         <div class="hero-cta-content">
+          <h2 class="hero-cta-title">Crosschain Risk Framework</h2>
+          <p class="hero-cta-description">
+           An open-source security framework for assessing and mitigating risks in crosschain protocols
+          </p>
+          <div class="hero-github-stats">
+           <div class="hero-stat-card">
+            <svg class="hero-stat-icon" viewBox="0 0 16 16" width="24" height="24">
+             <path fill="currentColor" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/>
+            </svg>
+            <div class="hero-stat-content">
+             <span class="hero-stat-number">42</span>
+             <span class="hero-stat-label">Stars</span>
+            </div>
+           </div>
+           <div class="hero-stat-card">
+            <svg class="hero-stat-icon" viewBox="0 0 16 16" width="24" height="24">
+             <path fill="currentColor" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"/>
+            </svg>
+            <div class="hero-stat-content">
+             <span class="hero-stat-number">5</span>
+             <span class="hero-stat-label">Forks</span>
+            </div>
+           </div>
+          </div>
+          <a href="https://github.com/crosschain-risk-framework"
+             class="hero-cta-button"
+             target="_blank"
+             rel="noopener"
+             onclick="trackGitHubClick('hero')">
+           <svg class="hero-button-icon" viewBox="0 0 16 16" width="20" height="20">
+            <path fill="currentColor" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"/>
+           </svg>
+           <span>Star on GitHub</span>
+          </a>
+         </div>
+        </div>
+       </div>
+
        <!-- BEGIN INCLUDE framework/01intro/introduction.md -->
        <h1 id="introduction">
         Introduction
