@@ -608,6 +608,32 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: CTA Contribution Button Styles */
+#cta-contribution-button {
+  flex-shrink: 0;
+  transition: opacity 0.3s ease;
+}
+
+#cta-contribution-button .md-button {
+  font-size: 0.7rem;
+  padding: 0.5em 1em;
+  white-space: nowrap;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 76.234375em) {
+  #cta-contribution-button {
+    display: none !important;
+  }
+}
+
+@media screen and (min-width: 76.25em) and (max-width: 90em) {
+  #cta-contribution-button .md-button {
+    font-size: 0.65rem;
+    padding: 0.4em 0.8em;
+  }
+}
   </style>
  </head>
  <body dir="ltr">
@@ -669,6 +695,17 @@
        </div>
       </div>
      </div>
+    </div>
+    <!-- A/B Test: CTA Contribution Button -->
+    <div id="cta-contribution-button" class="md-header__option" style="display: none; margin-right: 0.8rem;">
+     <a href="https://github.com/crosschain-risk-framework/crosschain-risk-framework/issues"
+        class="md-button md-button--primary"
+        id="contribute-cta"
+        target="_blank"
+        rel="noopener"
+        title="Help improve this framework">
+      Contribute to Framework
+     </a>
     </div>
     <div class="md-header__source">
      <a class="md-source" data-md-component="source" title="Go to repository">
@@ -987,5 +1024,185 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test Script: CTA Contribution Button -->
+  <script>
+  (function() {
+    'use strict';
+
+    // A/B Test Configuration
+    const AB_TEST_CONFIG = {
+      name: 'cta-contribution-button',
+      cookieName: 'ab_test_cta_contribution',
+      cookieExpireDays: 30,
+      variants: {
+        CONTROL: 'control',    // No button shown
+        TREATMENT: 'treatment'  // Button shown
+      }
+    };
+
+    // Utility: Set cookie
+    function setCookie(name, value, days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = 'expires=' + date.toUTCString();
+      document.cookie = name + '=' + value + ';' + expires + ';path=/;SameSite=Strict';
+    }
+
+    // Utility: Get cookie
+    function getCookie(name) {
+      const nameEQ = name + '=';
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        let cookie = cookies[i].trim();
+        if (cookie.indexOf(nameEQ) === 0) {
+          return cookie.substring(nameEQ.length);
+        }
+      }
+      return null;
+    }
+
+    // Utility: Track event to console and localStorage
+    function trackEvent(eventName, eventData) {
+      const event = {
+        test: AB_TEST_CONFIG.name,
+        event: eventName,
+        variant: eventData.variant,
+        timestamp: new Date().toISOString(),
+        data: eventData
+      };
+
+      // Log to console for development
+      console.log('[A/B Test]', event);
+
+      // Store in localStorage for analytics
+      try {
+        const storageKey = 'ab_test_events';
+        const events = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        events.push(event);
+        // Keep only last 100 events
+        if (events.length > 100) {
+          events.shift();
+        }
+        localStorage.setItem(storageKey, JSON.stringify(events));
+      } catch (e) {
+        console.warn('[A/B Test] Could not store event:', e);
+      }
+
+      // TODO: Send to analytics service
+      // Example: window.gtag && window.gtag('event', eventName, eventData);
+    }
+
+    // Get or assign variant
+    function getVariant() {
+      let variant = getCookie(AB_TEST_CONFIG.cookieName);
+
+      if (!variant) {
+        // Random assignment: 50/50 split
+        variant = Math.random() < 0.5
+          ? AB_TEST_CONFIG.variants.CONTROL
+          : AB_TEST_CONFIG.variants.TREATMENT;
+
+        setCookie(AB_TEST_CONFIG.cookieName, variant, AB_TEST_CONFIG.cookieExpireDays);
+
+        // Track assignment
+        trackEvent('variant_assigned', {
+          variant: variant,
+          testName: AB_TEST_CONFIG.name
+        });
+      }
+
+      return variant;
+    }
+
+    // Initialize A/B test
+    function initABTest() {
+      const variant = getVariant();
+      const ctaButton = document.getElementById('cta-contribution-button');
+      const ctaLink = document.getElementById('contribute-cta');
+
+      if (!ctaButton) {
+        console.warn('[A/B Test] CTA button element not found');
+        return;
+      }
+
+      // Track page view with variant
+      trackEvent('page_view', {
+        variant: variant,
+        url: window.location.href
+      });
+
+      // Show button only for treatment group
+      if (variant === AB_TEST_CONFIG.variants.TREATMENT) {
+        ctaButton.style.display = 'block';
+
+        // Track button visibility
+        trackEvent('button_shown', {
+          variant: variant
+        });
+
+        // Track button clicks
+        if (ctaLink) {
+          ctaLink.addEventListener('click', function(e) {
+            trackEvent('button_clicked', {
+              variant: variant,
+              targetUrl: ctaLink.href,
+              timestamp: new Date().toISOString()
+            });
+
+            // Allow default link behavior
+            // The click will navigate to GitHub issues page
+          });
+
+          // Track hover events (user interest)
+          let hoverTracked = false;
+          ctaLink.addEventListener('mouseenter', function() {
+            if (!hoverTracked) {
+              trackEvent('button_hovered', {
+                variant: variant
+              });
+              hoverTracked = true;
+            }
+          });
+        }
+      }
+
+      // Add data attribute for testing/debugging
+      document.documentElement.setAttribute('data-ab-test-variant', variant);
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initABTest);
+    } else {
+      initABTest();
+    }
+
+    // Expose utility for manual testing/debugging
+    window.ABTest = {
+      getVariant: getVariant,
+      getEvents: function() {
+        try {
+          return JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+        } catch (e) {
+          return [];
+        }
+      },
+      clearEvents: function() {
+        localStorage.removeItem('ab_test_events');
+        console.log('[A/B Test] Events cleared');
+      },
+      forceVariant: function(variant) {
+        if (Object.values(AB_TEST_CONFIG.variants).includes(variant)) {
+          setCookie(AB_TEST_CONFIG.cookieName, variant, AB_TEST_CONFIG.cookieExpireDays);
+          console.log('[A/B Test] Variant forced to:', variant);
+          window.location.reload();
+        } else {
+          console.error('[A/B Test] Invalid variant:', variant);
+        }
+      }
+    };
+  })();
+  </script>
  </body>
 </html>
