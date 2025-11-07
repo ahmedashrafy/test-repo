@@ -609,6 +609,138 @@
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
   </style>
+  <style>
+    /* A/B Test: CTA Button Prominence - cta-button-prominence */
+    /* Styles for the prominent call-to-action buttons in header */
+    .md-header__cta-container {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-left: auto;
+      margin-right: 0.8rem;
+    }
+
+    .md-header__cta-button {
+      background-color: var(--md-accent-fg-color);
+      color: var(--md-accent-bg-color);
+      border: none;
+      border-radius: 0.1rem;
+      padding: 0.4rem 1rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background-color 0.25s, transform 0.15s;
+      cursor: pointer;
+      white-space: nowrap;
+      outline-color: var(--md-accent-fg-color);
+    }
+
+    .md-header__cta-button:hover {
+      background-color: var(--md-accent-fg-color--transparent);
+      color: var(--md-accent-fg-color);
+      transform: translateY(-1px);
+    }
+
+    .md-header__cta-button:active {
+      transform: translateY(0);
+    }
+
+    /* Hide CTA buttons on mobile to maintain minimal header */
+    @media screen and (max-width: 59.984375em) {
+      .md-header__cta-container {
+        display: none;
+      }
+    }
+  </style>
+  <script>
+    /* A/B Test Configuration: cta-button-prominence */
+    /* Feature flag to enable/disable CTA buttons in header */
+    window.abTestConfig = {
+      ctaButtonProminence: {
+        enabled: true, // Set to false to show minimal header (control)
+        variant: 'get-started', // Options: 'get-started', 'read-framework', 'both'
+        trackingEnabled: true
+      }
+    };
+
+    /* Analytics tracking for A/B test */
+    function trackCTAClick(buttonName) {
+      if (window.abTestConfig.ctaButtonProminence.trackingEnabled) {
+        const event = {
+          test: 'cta-button-prominence',
+          action: 'click',
+          button: buttonName,
+          timestamp: new Date().toISOString()
+        };
+
+        // Log to console for demo - in production, send to analytics service
+        console.log('[A/B Test] CTA Click:', event);
+
+        // Example: Send to Google Analytics
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'cta_click', {
+            'event_category': 'ab_test',
+            'event_label': 'cta-button-prominence',
+            'button_name': buttonName
+          });
+        }
+
+        // Store event in localStorage for later analysis
+        const events = JSON.parse(localStorage.getItem('abTestEvents') || '[]');
+        events.push(event);
+        localStorage.setItem('abTestEvents', JSON.stringify(events));
+      }
+    }
+
+    /* Track page engagement metrics */
+    function trackEngagementMetrics() {
+      if (!window.abTestConfig.ctaButtonProminence.trackingEnabled) return;
+
+      let scrollDepth = 0;
+      let timeOnPage = 0;
+      const startTime = Date.now();
+
+      // Track scroll depth
+      window.addEventListener('scroll', function() {
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const currentScrollDepth = Math.round(((scrollTop + windowHeight) / documentHeight) * 100);
+
+        if (currentScrollDepth > scrollDepth) {
+          scrollDepth = currentScrollDepth;
+        }
+      });
+
+      // Track time on page on unload
+      window.addEventListener('beforeunload', function() {
+        timeOnPage = Math.round((Date.now() - startTime) / 1000);
+
+        const metrics = {
+          test: 'cta-button-prominence',
+          variant: window.abTestConfig.ctaButtonProminence.enabled ?
+                   window.abTestConfig.ctaButtonProminence.variant : 'control',
+          scrollDepth: scrollDepth,
+          timeOnPage: timeOnPage,
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('[A/B Test] Engagement Metrics:', metrics);
+
+        // Send metrics to analytics
+        const metrics_list = JSON.parse(localStorage.getItem('abTestMetrics') || '[]');
+        metrics_list.push(metrics);
+        localStorage.setItem('abTestMetrics', JSON.stringify(metrics_list));
+      });
+    }
+
+    // Initialize engagement tracking
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', trackEngagementMetrics);
+    } else {
+      trackEngagementMetrics();
+    }
+  </script>
  </head>
  <body dir="ltr">
   <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox">
@@ -669,6 +801,48 @@
        </div>
       </div>
      </div>
+    </div>
+    <!-- A/B Test: CTA Button Prominence -->
+    <!-- Call-to-action buttons to increase user engagement -->
+    <div class="md-header__cta-container" id="header-cta-container">
+     <script>
+      // Dynamically show CTA buttons based on A/B test configuration
+      (function() {
+        const config = window.abTestConfig?.ctaButtonProminence || { enabled: false };
+        const container = document.currentScript.parentElement;
+
+        if (config.enabled) {
+          const fragment = document.createDocumentFragment();
+
+          // Get Started button
+          if (config.variant === 'get-started' || config.variant === 'both') {
+            const getStartedBtn = document.createElement('a');
+            getStartedBtn.href = '#introduction';
+            getStartedBtn.className = 'md-header__cta-button';
+            getStartedBtn.textContent = 'Get Started';
+            getStartedBtn.setAttribute('aria-label', 'Get started with the framework');
+            getStartedBtn.onclick = function() { trackCTAClick('get-started'); };
+            fragment.appendChild(getStartedBtn);
+          }
+
+          // Read Framework button
+          if (config.variant === 'read-framework' || config.variant === 'both') {
+            const readFrameworkBtn = document.createElement('a');
+            readFrameworkBtn.href = '#introduction';
+            readFrameworkBtn.className = 'md-header__cta-button';
+            readFrameworkBtn.textContent = 'Read Framework';
+            readFrameworkBtn.setAttribute('aria-label', 'Read the security framework');
+            readFrameworkBtn.onclick = function() { trackCTAClick('read-framework'); };
+            fragment.appendChild(readFrameworkBtn);
+          }
+
+          container.appendChild(fragment);
+        } else {
+          // Hide container if A/B test is disabled (control group)
+          container.style.display = 'none';
+        }
+      })();
+     </script>
     </div>
     <div class="md-header__source">
      <a class="md-source" data-md-component="source" title="Go to repository">
