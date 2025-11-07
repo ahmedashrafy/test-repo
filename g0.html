@@ -608,6 +608,54 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: navigation-layout-test */
+/* CSS to control variant visibility based on data-variant attribute */
+
+/* Variant A (Control): Show simple navigation, hide expanded navigation */
+nav[data-variant="A"] .nav-variant-a {
+  display: block;
+}
+nav[data-variant="A"] .nav-variant-b {
+  display: none;
+}
+
+/* Variant B (Treatment): Show expanded navigation, hide simple navigation */
+nav[data-variant="B"] .nav-variant-a {
+  display: none;
+}
+nav[data-variant="B"] .nav-variant-b {
+  display: block;
+}
+
+/* Styling for expanded navigation subsections */
+.nav-variant-b .md-nav__list--sub {
+  padding-left: 0.8rem;
+  margin-top: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.nav-variant-b .md-nav__link--parent {
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.nav-variant-b .md-nav__link--sub {
+  font-size: 0.9em;
+  padding-left: 1rem;
+  color: var(--md-default-fg-color--light);
+  transition: color 125ms;
+}
+
+.nav-variant-b .md-nav__link--sub:hover {
+  color: var(--md-accent-fg-color);
+}
+
+.nav-variant-b .md-nav__item--section {
+  margin-bottom: 1rem;
+}
+
+/* End A/B Test CSS */
   </style>
  </head>
  <body dir="ltr">
@@ -695,7 +743,15 @@
      <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" style="top: 48px;">
       <div class="md-sidebar__scrollwrap" style="height: 594px;">
        <div class="md-sidebar__inner">
-        <nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--integrated" data-md-level="0">
+        <!-- A/B Test: navigation-layout-test -->
+        <!-- Test Description: Comparing simplified navigation (Variant A) vs. expanded navigation with visible subsections (Variant B) -->
+        <!-- Hypothesis: Expanded navigation will improve user engagement and content discovery -->
+        <!-- Metrics to track: time on page, number of section clicks, scroll depth, pages per session -->
+        <!--
+          To activate variant B, change data-variant="A" to data-variant="B"
+          In production, this would be controlled by your A/B testing framework (e.g., setting a cookie/localStorage value)
+        -->
+        <nav aria-label="Navigation" class="md-nav md-nav--primary md-nav--integrated" data-md-level="0" data-variant="A">
          <label class="md-nav__title" for="__drawer">
           <a aria-label="Crosschain Risk Framework" class="md-nav__button md-logo" data-md-component="logo" title="Crosschain Risk Framework">
           </a>
@@ -718,7 +774,9 @@
            </div>
           </a>
          </div>
-         <ul class="md-nav__list">
+
+         <!-- Variant A: Control - Collapsed 4-item navigation structure -->
+         <ul class="md-nav__list nav-variant-a">
           <li class="md-nav__item">
            <a class="md-nav__link">
             <span class="md-ellipsis">
@@ -746,6 +804,130 @@
              Protocol Architecture Risk
             </span>
            </a>
+          </li>
+         </ul>
+
+         <!-- Variant B: Treatment - Expanded navigation with visible subsections -->
+         <ul class="md-nav__list nav-variant-b">
+          <li class="md-nav__item md-nav__item--section">
+           <a class="md-nav__link md-nav__link--parent">
+            <span class="md-ellipsis">
+             Introduction
+            </span>
+           </a>
+           <ul class="md-nav__list md-nav__list--sub">
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Types of Crosschain Interaction
+              </span>
+             </a>
+            </li>
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Stakeholders
+              </span>
+             </a>
+            </li>
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Security Risks
+              </span>
+             </a>
+            </li>
+           </ul>
+          </li>
+          <li class="md-nav__item md-nav__item--section">
+           <a class="md-nav__link md-nav__link--parent">
+            <span class="md-ellipsis">
+             Categories of Risk
+            </span>
+           </a>
+           <ul class="md-nav__list md-nav__list--sub">
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Network Consensus
+              </span>
+             </a>
+            </li>
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Protocol Architecture
+              </span>
+             </a>
+            </li>
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Implementation
+              </span>
+             </a>
+            </li>
+           </ul>
+          </li>
+          <li class="md-nav__item md-nav__item--section">
+           <a class="md-nav__link md-nav__link--parent">
+            <span class="md-ellipsis">
+             Network Consensus Risk
+            </span>
+           </a>
+           <ul class="md-nav__list md-nav__list--sub">
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Finality
+              </span>
+             </a>
+            </li>
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Liveness
+              </span>
+             </a>
+            </li>
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Safety
+              </span>
+             </a>
+            </li>
+           </ul>
+          </li>
+          <li class="md-nav__item md-nav__item--section">
+           <a class="md-nav__link md-nav__link--parent">
+            <span class="md-ellipsis">
+             Protocol Architecture Risk
+            </span>
+           </a>
+           <ul class="md-nav__list md-nav__list--sub">
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Validator Security
+              </span>
+             </a>
+            </li>
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Message Verification
+              </span>
+             </a>
+            </li>
+            <li class="md-nav__item">
+             <a class="md-nav__link md-nav__link--sub">
+              <span class="md-ellipsis">
+               Smart Contract Risk
+              </span>
+             </a>
+            </li>
+           </ul>
           </li>
          </ul>
         </nav>
@@ -987,5 +1169,184 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: navigation-layout-test - Analytics & Variant Assignment -->
+  <script>
+  (function() {
+    'use strict';
+
+    // A/B Test Configuration
+    const TEST_NAME = 'navigation-layout-test';
+    const STORAGE_KEY = 'ab_test_nav_variant';
+
+    // A/B Test Variant Assignment
+    function assignVariant() {
+      // Check if user already has a variant assigned
+      let variant = localStorage.getItem(STORAGE_KEY);
+
+      if (!variant) {
+        // Randomly assign variant (50/50 split)
+        variant = Math.random() < 0.5 ? 'A' : 'B';
+        localStorage.setItem(STORAGE_KEY, variant);
+
+        // Track variant assignment event
+        trackEvent('ab_test_assigned', {
+          test_name: TEST_NAME,
+          variant: variant
+        });
+      }
+
+      return variant;
+    }
+
+    // Apply variant to navigation element
+    function applyVariant(variant) {
+      const navElement = document.querySelector('nav[data-variant]');
+      if (navElement) {
+        navElement.setAttribute('data-variant', variant);
+      }
+    }
+
+    // Analytics tracking function (integrate with your analytics platform)
+    function trackEvent(eventName, eventData) {
+      // Example: Google Analytics 4
+      if (typeof gtag !== 'undefined') {
+        gtag('event', eventName, eventData);
+      }
+
+      // Example: Segment
+      if (typeof analytics !== 'undefined') {
+        analytics.track(eventName, eventData);
+      }
+
+      // Console logging for debugging (remove in production)
+      console.log('Track Event:', eventName, eventData);
+    }
+
+    // Track navigation click events
+    function setupClickTracking() {
+      const navLinks = document.querySelectorAll('.md-nav__link');
+
+      navLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          const variant = localStorage.getItem(STORAGE_KEY);
+          const linkText = this.textContent.trim();
+          const isSubsection = this.classList.contains('md-nav__link--sub');
+
+          trackEvent('navigation_click', {
+            test_name: TEST_NAME,
+            variant: variant,
+            link_text: linkText,
+            is_subsection: isSubsection,
+            timestamp: new Date().toISOString()
+          });
+        });
+      });
+    }
+
+    // Track time on page
+    function setupTimeTracking() {
+      const startTime = Date.now();
+      const variant = localStorage.getItem(STORAGE_KEY);
+
+      // Track when user leaves the page
+      window.addEventListener('beforeunload', function() {
+        const timeSpent = Math.round((Date.now() - startTime) / 1000);
+
+        trackEvent('time_on_page', {
+          test_name: TEST_NAME,
+          variant: variant,
+          seconds: timeSpent
+        });
+      });
+
+      // Also track at regular intervals
+      setInterval(function() {
+        const timeSpent = Math.round((Date.now() - startTime) / 1000);
+
+        trackEvent('time_on_page_heartbeat', {
+          test_name: TEST_NAME,
+          variant: variant,
+          seconds: timeSpent
+        });
+      }, 30000); // Every 30 seconds
+    }
+
+    // Track scroll depth
+    function setupScrollTracking() {
+      let maxScrollDepth = 0;
+      const variant = localStorage.getItem(STORAGE_KEY);
+
+      window.addEventListener('scroll', function() {
+        const scrollPercentage = Math.round(
+          (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100
+        );
+
+        if (scrollPercentage > maxScrollDepth) {
+          maxScrollDepth = scrollPercentage;
+
+          // Track at 25%, 50%, 75%, 100% milestones
+          if (maxScrollDepth >= 25 && maxScrollDepth % 25 < 5) {
+            trackEvent('scroll_depth', {
+              test_name: TEST_NAME,
+              variant: variant,
+              depth_percentage: Math.floor(maxScrollDepth / 25) * 25
+            });
+          }
+        }
+      });
+
+      // Track final scroll depth on page leave
+      window.addEventListener('beforeunload', function() {
+        trackEvent('final_scroll_depth', {
+          test_name: TEST_NAME,
+          variant: variant,
+          depth_percentage: maxScrollDepth
+        });
+      });
+    }
+
+    // Track pages per session (using sessionStorage)
+    function setupPageViewTracking() {
+      const variant = localStorage.getItem(STORAGE_KEY);
+      const sessionKey = 'ab_test_pages_viewed';
+
+      // Get or initialize page count
+      let pagesViewed = parseInt(sessionStorage.getItem(sessionKey) || '0') + 1;
+      sessionStorage.setItem(sessionKey, pagesViewed.toString());
+
+      trackEvent('page_view', {
+        test_name: TEST_NAME,
+        variant: variant,
+        pages_in_session: pagesViewed,
+        page_url: window.location.href
+      });
+    }
+
+    // Initialize A/B test
+    function init() {
+      // Assign and apply variant
+      const variant = assignVariant();
+      applyVariant(variant);
+
+      // Set up tracking
+      setupClickTracking();
+      setupTimeTracking();
+      setupScrollTracking();
+      setupPageViewTracking();
+
+      // Log initialization
+      console.log('A/B Test initialized:', TEST_NAME, 'Variant:', variant);
+    }
+
+    // Run initialization when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+  </script>
+
  </body>
 </html>
