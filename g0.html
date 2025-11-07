@@ -609,6 +609,174 @@
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
   </style>
+
+  <!-- A/B Test Styles: hero-cta-button-color -->
+  <style>
+    /*
+     * A/B Test: hero-cta-button-color
+     * Purpose: Test high-contrast accent color vs default theme color for GitHub CTA button
+     * Hypothesis: A more prominent green accent color will increase click-through rates
+     */
+    .ab-test-hero-cta[data-ab-variant="treatment"] {
+      background-color: #00e676 !important;
+      border-radius: 0.2rem;
+      padding: 0.4rem 0.8rem;
+      transition: background-color 0.25s, transform 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 230, 118, 0.3);
+    }
+
+    .ab-test-hero-cta[data-ab-variant="treatment"]:hover {
+      background-color: #00c853 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 230, 118, 0.4);
+    }
+
+    .ab-test-hero-cta[data-ab-variant="treatment"]:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 230, 118, 0.3);
+    }
+
+    .ab-test-hero-cta[data-ab-variant="treatment"] .md-source__repository,
+    .ab-test-hero-cta[data-ab-variant="treatment"] .md-source__icon {
+      color: #1a1a1a !important;
+    }
+
+    /* Control variant - uses default theme styling */
+    .ab-test-hero-cta[data-ab-variant="control"] {
+      /* Inherits default styles from .md-source */
+    }
+  </style>
+
+  <!-- A/B Test Tracking Script -->
+  <script>
+    /**
+     * A/B Test Click Tracking
+     * Test: hero-cta-button-color
+     * Tracks user interactions with the GitHub repository CTA button
+     */
+
+    // Initialize tracking data structure
+    window.abTestData = window.abTestData || {
+      testId: 'hero-cta-button-color',
+      sessionId: generateSessionId(),
+      events: []
+    };
+
+    /**
+     * Generate a unique session ID for tracking
+     */
+    function generateSessionId() {
+      return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    /**
+     * Track CTA button clicks
+     * @param {Event} event - The click event
+     * @param {string} testId - The A/B test identifier
+     * @param {string} variant - The variant (control or treatment)
+     */
+    function trackCTAClick(event, testId, variant) {
+      const clickEvent = {
+        testId: testId,
+        variant: variant,
+        timestamp: new Date().toISOString(),
+        sessionId: window.abTestData.sessionId,
+        href: event.currentTarget.href,
+        userAgent: navigator.userAgent,
+        screenResolution: window.screen.width + 'x' + window.screen.height,
+        viewport: window.innerWidth + 'x' + window.innerHeight
+      };
+
+      // Store event data
+      window.abTestData.events.push(clickEvent);
+
+      // Log to console for verification (remove in production)
+      console.log('[A/B Test] CTA Click Tracked:', clickEvent);
+
+      // Send to analytics endpoint (placeholder - integrate with your analytics service)
+      sendToAnalytics(clickEvent);
+
+      // Store in localStorage for persistence
+      try {
+        const storedEvents = JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+        storedEvents.push(clickEvent);
+        localStorage.setItem('ab_test_events', JSON.stringify(storedEvents));
+      } catch (e) {
+        console.error('[A/B Test] Failed to store event:', e);
+      }
+    }
+
+    /**
+     * Send event data to analytics service
+     * @param {Object} eventData - The event data to send
+     */
+    function sendToAnalytics(eventData) {
+      // TODO: Integrate with your analytics service (e.g., Google Analytics, Mixpanel, custom endpoint)
+      // Example implementations:
+
+      // Google Analytics 4 example:
+      // if (typeof gtag !== 'undefined') {
+      //   gtag('event', 'ab_test_click', {
+      //     test_id: eventData.testId,
+      //     variant: eventData.variant,
+      //     session_id: eventData.sessionId
+      //   });
+      // }
+
+      // Custom endpoint example:
+      // fetch('/api/ab-test/track', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(eventData)
+      // }).catch(err => console.error('[A/B Test] Analytics send failed:', err));
+
+      console.log('[A/B Test] Analytics endpoint integration needed');
+    }
+
+    /**
+     * Track page impressions (when the CTA is viewed)
+     */
+    function trackImpression() {
+      const ctaElement = document.querySelector('.ab-test-hero-cta');
+      if (!ctaElement) return;
+
+      const variant = ctaElement.getAttribute('data-ab-variant');
+      const impressionEvent = {
+        testId: window.abTestData.testId,
+        variant: variant,
+        eventType: 'impression',
+        timestamp: new Date().toISOString(),
+        sessionId: window.abTestData.sessionId
+      };
+
+      window.abTestData.events.push(impressionEvent);
+      console.log('[A/B Test] Impression Tracked:', impressionEvent);
+
+      // Store impression
+      try {
+        const storedEvents = JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+        storedEvents.push(impressionEvent);
+        localStorage.setItem('ab_test_events', JSON.stringify(storedEvents));
+      } catch (e) {
+        console.error('[A/B Test] Failed to store impression:', e);
+      }
+    }
+
+    // Track impression when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', trackImpression);
+    } else {
+      trackImpression();
+    }
+
+    // Export analytics data retrieval function
+    window.getABTestData = function() {
+      return {
+        current: window.abTestData,
+        stored: JSON.parse(localStorage.getItem('ab_test_events') || '[]')
+      };
+    };
+  </script>
  </head>
  <body dir="ltr">
   <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox">
@@ -671,7 +839,10 @@
      </div>
     </div>
     <div class="md-header__source">
-     <a class="md-source" data-md-component="source" title="Go to repository">
+     <!-- A/B Test: hero-cta-button-color -->
+     <!-- Test objective: Improve GitHub repository engagement by changing button color -->
+     <!-- Variant: High-contrast green accent (#00e676) vs default theme color -->
+     <a class="md-source ab-test-hero-cta" data-md-component="source" data-ab-test="hero-cta-button-color" data-ab-variant="treatment" title="Go to repository" onclick="trackCTAClick(event, 'hero-cta-button-color', 'treatment')">
       <div class="md-source__icon md-icon">
       </div>
       <div class="md-source__repository md-source__repository--active">
@@ -702,7 +873,8 @@
           Crosschain Risk Framework
          </label>
          <div class="md-nav__source">
-          <a class="md-source" data-md-component="source" title="Go to repository">
+          <!-- A/B Test: hero-cta-button-color (mobile sidebar variant) -->
+          <a class="md-source ab-test-hero-cta" data-md-component="source" data-ab-test="hero-cta-button-color" data-ab-variant="treatment" title="Go to repository" onclick="trackCTAClick(event, 'hero-cta-button-color', 'treatment')">
            <div class="md-source__icon md-icon">
            </div>
            <div class="md-source__repository md-source__repository--active">
