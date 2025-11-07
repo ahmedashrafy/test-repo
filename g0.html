@@ -608,6 +608,56 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: CTA Button Styling (cta-button-emphasis) */
+.md-header__cta-button {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.2rem;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-decoration: none;
+  transition: background-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  margin: 0 0.5rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-header__cta-button:hover {
+  background-color: var(--md-primary-fg-color--light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.md-header__cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-header__cta-button:focus {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 2px;
+}
+
+.md-header__cta-text {
+  line-height: 1.2;
+}
+
+/* Responsive: Hide CTA button on smaller screens to avoid crowding */
+@media screen and (max-width: 76.234375em) {
+  .md-header__cta-button {
+    display: none;
+  }
+}
+
+/* Feature flag support: Hide button if data attribute is set to 'control' */
+.md-header__cta-button[data-ab-test-variant="control"] {
+  display: none;
+}
+/* End A/B Test Styling */
   </style>
  </head>
  <body dir="ltr">
@@ -642,6 +692,11 @@
       </div>
      </div>
     </div>
+    <!-- A/B Test: CTA Button (cta-button-emphasis) -->
+    <a href="#introduction" class="md-header__cta-button" title="Get Started with the Framework" data-ab-test="cta-button-emphasis">
+     <span class="md-header__cta-text">Read Framework</span>
+    </a>
+    <!-- End A/B Test -->
     <label class="md-header__button md-icon" for="__search">
     </label>
     <div class="md-search" data-md-component="search" role="dialog">
@@ -987,5 +1042,64 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test Configuration (cta-button-emphasis) -->
+  <script>
+    /**
+     * A/B Test: CTA Button Emphasis
+     * Test ID: cta-button-emphasis
+     *
+     * Description: Tests the impact of adding a prominent CTA button in the header
+     * navigation to improve user engagement and guide visitors to key content.
+     *
+     * Variants:
+     * - control: Original minimal navigation (button hidden)
+     * - treatment: Navigation with prominent "Read Framework" CTA button (default)
+     *
+     * Configuration:
+     * Set AB_TEST_CTA_BUTTON_VARIANT to 'control' or 'treatment'
+     * If not set, defaults to 'treatment' (shows the button)
+     */
+
+    (function() {
+      // Configuration: Set variant here or via external config
+      // Options: 'control' | 'treatment'
+      var variant = window.AB_TEST_CTA_BUTTON_VARIANT || 'treatment';
+
+      // Get the CTA button element
+      var ctaButton = document.querySelector('.md-header__cta-button');
+
+      if (ctaButton) {
+        // Apply variant
+        ctaButton.setAttribute('data-ab-test-variant', variant);
+
+        // Track the variant (you can integrate with your analytics here)
+        if (window.analytics && typeof window.analytics.track === 'function') {
+          window.analytics.track('AB Test Viewed', {
+            test_id: 'cta-button-emphasis',
+            variant: variant
+          });
+        }
+
+        // Track button clicks for treatment variant
+        if (variant === 'treatment') {
+          ctaButton.addEventListener('click', function(e) {
+            // Track CTA button click
+            if (window.analytics && typeof window.analytics.track === 'function') {
+              window.analytics.track('CTA Button Clicked', {
+                test_id: 'cta-button-emphasis',
+                button_text: 'Read Framework',
+                destination: '#introduction'
+              });
+            }
+          });
+        }
+
+        // Log variant for debugging (remove in production)
+        console.log('[A/B Test] cta-button-emphasis variant:', variant);
+      }
+    })();
+  </script>
+  <!-- End A/B Test Configuration -->
  </body>
 </html>
