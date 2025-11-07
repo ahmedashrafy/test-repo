@@ -796,6 +796,147 @@
        <p>
         While this document is still a work in progress, its ultimate objective is to enable progress toward more secure, robust, and decentralized crosschain protocols that can serve as solid foundations for a multichain future. We highly encourage contributions and feedback from the community towards this end.
        </p>
+
+       <!-- A/B Test: CTA Button (cta-button-homepage) -->
+       <div id="cta-container" style="text-align: center; margin: 2em 0; padding: 1.5em; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+         <button id="cta-button" style="
+           background-color: #ffffff;
+           color: #667eea;
+           font-size: 1.1em;
+           font-weight: bold;
+           padding: 0.9em 2.5em;
+           border: none;
+           border-radius: 50px;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+           font-family: inherit;
+         " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+           Loading...
+         </button>
+       </div>
+       <script>
+         (function() {
+           // A/B Test Configuration for cta-button-homepage
+           const AB_TEST_NAME = 'cta-button-homepage';
+           const VARIANTS = {
+             A: 'Read the Full Framework',
+             B: 'Get Started with Risk Assessment'
+           };
+
+           // Get or assign variant (stored in localStorage for consistency)
+           function getVariant() {
+             let variant = localStorage.getItem(AB_TEST_NAME + '_variant');
+             if (!variant) {
+               // Randomly assign variant (50/50 split)
+               variant = Math.random() < 0.5 ? 'A' : 'B';
+               localStorage.setItem(AB_TEST_NAME + '_variant', variant);
+             }
+             return variant;
+           }
+
+           // Track event
+           function trackEvent(eventType, data) {
+             const trackingData = {
+               test: AB_TEST_NAME,
+               variant: getVariant(),
+               timestamp: new Date().toISOString(),
+               eventType: eventType,
+               ...data
+             };
+
+             // Log to console (in production, send to analytics service)
+             console.log('[A/B Test Tracking]', trackingData);
+
+             // Store in localStorage for demo purposes
+             const events = JSON.parse(localStorage.getItem(AB_TEST_NAME + '_events') || '[]');
+             events.push(trackingData);
+             localStorage.setItem(AB_TEST_NAME + '_events', JSON.stringify(events));
+
+             // Send to analytics endpoint (if available)
+             if (window.analytics && typeof window.analytics.track === 'function') {
+               window.analytics.track('AB_Test_Event', trackingData);
+             }
+           }
+
+           // Initialize button with variant
+           const variant = getVariant();
+           const button = document.getElementById('cta-button');
+           button.textContent = VARIANTS[variant];
+
+           // Track page view
+           trackEvent('view', {
+             page: window.location.pathname,
+             referrer: document.referrer
+           });
+
+           // Track button click
+           button.addEventListener('click', function() {
+             trackEvent('click', {
+               buttonText: VARIANTS[variant],
+               page: window.location.pathname
+             });
+
+             // Navigate based on variant
+             if (variant === 'A') {
+               // Scroll to "Types of Crosschain Interaction" section
+               const section = document.getElementById('types-of-crosschain-interaction');
+               if (section) {
+                 section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+               }
+             } else {
+               // Scroll to "Categories of Risk" section (or create a dedicated risk assessment page)
+               const riskSection = document.querySelector('a[href*="risk"]');
+               if (riskSection) {
+                 riskSection.click();
+               } else {
+                 // Fallback: scroll to "Security Risks" section
+                 const securitySection = document.getElementById('security-risks');
+                 if (securitySection) {
+                   securitySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                 }
+               }
+             }
+           });
+
+           // Track time on page (for engagement metrics)
+           let startTime = Date.now();
+           window.addEventListener('beforeunload', function() {
+             const timeSpent = Math.round((Date.now() - startTime) / 1000);
+             trackEvent('time_on_page', {
+               seconds: timeSpent,
+               page: window.location.pathname
+             });
+           });
+
+           // Debug: Add method to check results
+           window.getABTestResults = function() {
+             const events = JSON.parse(localStorage.getItem(AB_TEST_NAME + '_events') || '[]');
+             const variantA = events.filter(e => e.variant === 'A');
+             const variantB = events.filter(e => e.variant === 'B');
+
+             return {
+               variantA: {
+                 views: variantA.filter(e => e.eventType === 'view').length,
+                 clicks: variantA.filter(e => e.eventType === 'click').length,
+                 avgTimeOnPage: variantA.filter(e => e.eventType === 'time_on_page').reduce((acc, e) => acc + e.seconds, 0) / variantA.filter(e => e.eventType === 'time_on_page').length || 0,
+                 clickThroughRate: (variantA.filter(e => e.eventType === 'click').length / variantA.filter(e => e.eventType === 'view').length * 100) || 0
+               },
+               variantB: {
+                 views: variantB.filter(e => e.eventType === 'view').length,
+                 clicks: variantB.filter(e => e.eventType === 'click').length,
+                 avgTimeOnPage: variantB.filter(e => e.eventType === 'time_on_page').reduce((acc, e) => acc + e.seconds, 0) / variantB.filter(e => e.eventType === 'time_on_page').length || 0,
+                 clickThroughRate: (variantB.filter(e => e.eventType === 'click').length / variantB.filter(e => e.eventType === 'view').length * 100) || 0
+               },
+               allEvents: events
+             };
+           };
+
+           console.log('[A/B Test]', 'Test active:', AB_TEST_NAME, '| Variant:', variant);
+           console.log('[A/B Test]', 'To view results, run: getABTestResults()');
+         })();
+       </script>
+
        <h2 id="types-of-crosschain-interaction">
         Types of Crosschain Interaction
        </h2>
