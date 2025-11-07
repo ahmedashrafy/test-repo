@@ -608,6 +608,47 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: CTA Visibility - Custom Styles */
+.ab-test-cta-button {
+  display: inline-block;
+  padding: 0.5rem 1.2rem;
+  margin-left: 1rem;
+  background-color: #526cfe;
+  color: white;
+  border-radius: 0.2rem;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-decoration: none;
+  transition: background-color 0.25s, transform 0.25s;
+  white-space: nowrap;
+}
+
+.ab-test-cta-button:hover {
+  background-color: #4051b5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ab-test-cta-button:active {
+  transform: translateY(0);
+}
+
+/* Variant A: Keep existing subtle GitHub link (default) */
+.ab-test-variant-a .ab-test-cta-button {
+  display: none;
+}
+
+/* Variant B: Show prominent CTA button, hide or dim subtle link */
+.ab-test-variant-b .md-header__source {
+  opacity: 0.6;
+}
+
+@media screen and (max-width: 60em) {
+  .ab-test-cta-button {
+    display: none; /* Hide on mobile for better UX */
+  }
+}
   </style>
  </head>
  <body dir="ltr">
@@ -644,6 +685,16 @@
     </div>
     <label class="md-header__button md-icon" for="__search">
     </label>
+    <!-- A/B Test: Prominent CTA Button (Variant B) -->
+    <a href="https://github.com/crosschain-risk-framework/crosschain-risk-framework"
+       class="ab-test-cta-button"
+       target="_blank"
+       rel="noopener"
+       data-ab-test="cta-visibility-test"
+       data-ab-element="cta-button"
+       data-ab-action="click">
+      ⭐ Star on GitHub
+    </a>
     <div class="md-search" data-md-component="search" role="dialog">
      <label class="md-search__overlay" for="__search">
      </label>
@@ -671,7 +722,15 @@
      </div>
     </div>
     <div class="md-header__source">
-     <a class="md-source" data-md-component="source" title="Go to repository">
+     <a class="md-source"
+        data-md-component="source"
+        title="Go to repository"
+        href="https://github.com/crosschain-risk-framework/crosschain-risk-framework"
+        target="_blank"
+        rel="noopener"
+        data-ab-test="cta-visibility-test"
+        data-ab-element="subtle-link"
+        data-ab-action="click">
       <div class="md-source__icon md-icon">
       </div>
       <div class="md-source__repository md-source__repository--active">
@@ -987,5 +1046,170 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: CTA Visibility Test - JavaScript -->
+  <script>
+    (function() {
+      'use strict';
+
+      // A/B Test Configuration
+      const AB_TEST_CONFIG = {
+        testName: 'cta-visibility-test',
+        variants: ['variant-a', 'variant-b'],
+        storageKey: 'ab_test_cta_visibility',
+        conversionEventName: 'github_interaction'
+      };
+
+      /**
+       * Get or assign A/B test variant
+       * Uses localStorage to persist variant assignment across sessions
+       */
+      function getVariant() {
+        let variant = localStorage.getItem(AB_TEST_CONFIG.storageKey);
+
+        if (!variant) {
+          // Randomly assign variant (50/50 split)
+          const randomValue = Math.random();
+          variant = randomValue < 0.5 ? AB_TEST_CONFIG.variants[0] : AB_TEST_CONFIG.variants[1];
+          localStorage.setItem(AB_TEST_CONFIG.storageKey, variant);
+
+          // Track variant assignment
+          trackEvent('variant_assigned', {
+            variant: variant,
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        return variant;
+      }
+
+      /**
+       * Apply variant class to body element
+       */
+      function applyVariant(variant) {
+        document.body.classList.add('ab-test-' + variant);
+        document.body.setAttribute('data-ab-variant', variant);
+      }
+
+      /**
+       * Track events for analytics
+       * In production, this should integrate with your analytics platform
+       * (e.g., Google Analytics, Mixpanel, Segment, etc.)
+       */
+      function trackEvent(eventName, eventData) {
+        const trackingData = {
+          test: AB_TEST_CONFIG.testName,
+          event: eventName,
+          variant: document.body.getAttribute('data-ab-variant'),
+          timestamp: new Date().toISOString(),
+          ...eventData
+        };
+
+        // Log to console for debugging
+        console.log('[A/B Test]', trackingData);
+
+        // Store event in localStorage for analysis
+        const events = JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+        events.push(trackingData);
+        localStorage.setItem('ab_test_events', JSON.stringify(events));
+
+        // TODO: Send to analytics platform
+        // Example for Google Analytics:
+        // if (typeof gtag !== 'undefined') {
+        //   gtag('event', eventName, {
+        //     event_category: 'AB_Test',
+        //     event_label: AB_TEST_CONFIG.testName,
+        //     variant: trackingData.variant
+        //   });
+        // }
+
+        // Example for custom analytics endpoint:
+        // fetch('/api/analytics', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify(trackingData)
+        // });
+      }
+
+      /**
+       * Track clicks on A/B test elements
+       */
+      function setupClickTracking() {
+        document.querySelectorAll('[data-ab-test="' + AB_TEST_CONFIG.testName + '"]').forEach(function(element) {
+          element.addEventListener('click', function(event) {
+            const elementType = element.getAttribute('data-ab-element');
+            const action = element.getAttribute('data-ab-action');
+
+            trackEvent('element_click', {
+              element: elementType,
+              action: action,
+              href: element.href
+            });
+
+            // Track conversion (GitHub interaction)
+            trackEvent(AB_TEST_CONFIG.conversionEventName, {
+              element: elementType,
+              variant: document.body.getAttribute('data-ab-variant')
+            });
+          });
+        });
+      }
+
+      /**
+       * Track page view for the assigned variant
+       */
+      function trackPageView() {
+        trackEvent('page_view', {
+          url: window.location.href,
+          referrer: document.referrer
+        });
+      }
+
+      /**
+       * Initialize A/B test
+       */
+      function init() {
+        const variant = getVariant();
+        applyVariant(variant);
+
+        // Wait for DOM to be fully loaded
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+            setupClickTracking();
+            trackPageView();
+          });
+        } else {
+          setupClickTracking();
+          trackPageView();
+        }
+      }
+
+      // Run initialization
+      init();
+
+      // Expose API for debugging and manual testing
+      window.ABTest = {
+        getVariant: function() {
+          return document.body.getAttribute('data-ab-variant');
+        },
+        getEvents: function() {
+          return JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+        },
+        clearData: function() {
+          localStorage.removeItem(AB_TEST_CONFIG.storageKey);
+          localStorage.removeItem('ab_test_events');
+          console.log('[A/B Test] Data cleared. Reload page to get new variant.');
+        },
+        forceVariant: function(variant) {
+          if (AB_TEST_CONFIG.variants.includes(variant)) {
+            localStorage.setItem(AB_TEST_CONFIG.storageKey, variant);
+            console.log('[A/B Test] Variant forced to:', variant, '- Reload page to apply.');
+          } else {
+            console.error('[A/B Test] Invalid variant. Use:', AB_TEST_CONFIG.variants.join(' or '));
+          }
+        }
+      };
+    })();
+  </script>
  </body>
 </html>
