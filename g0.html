@@ -608,9 +608,190 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: Hero CTA Button Styles */
+/* Test Name: hero-cta-button-test */
+/* Description: Testing different CTA button text and styling for repository link */
+
+/* Base button styling for all variants */
+.md-source.cta-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-source.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  opacity: 1;
+}
+
+/* Variant A: Current text with button styling (Control) */
+/* Text: "Go to repository" */
+.md-source.cta-variant-a {
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  border: 2px solid var(--md-primary-fg-color);
+}
+
+.md-source.cta-variant-a:hover {
+  background-color: var(--md-primary-fg-color--light);
+  border-color: var(--md-primary-fg-color--light);
+}
+
+/* Variant B: "Get Started" with prominent button styling */
+.md-source.cta-variant-b {
+  background-color: var(--md-accent-fg-color);
+  color: white;
+  border: 2px solid var(--md-accent-fg-color);
+  font-weight: 700;
+  padding: 0.625rem 1.5rem;
+}
+
+.md-source.cta-variant-b:hover {
+  background-color: #6200ea;
+  border-color: #6200ea;
+  color: white;
+}
+
+/* Variant C: "Explore Framework" with different color scheme */
+.md-source.cta-variant-c {
+  background-color: #00bfa5;
+  color: white;
+  border: 2px solid #00bfa5;
+  font-weight: 700;
+  padding: 0.625rem 1.5rem;
+}
+
+.md-source.cta-variant-c:hover {
+  background-color: #00897b;
+  border-color: #00897b;
+  color: white;
+}
+
+/* Hide default stats for button variants */
+.cta-button .md-source__facts {
+  display: none;
+}
+
+/* Adjust icon for button variants */
+.cta-button .md-source__icon {
+  margin-right: 0.5rem;
+}
+
+.cta-button .md-source__repository {
+  display: inline-block;
+  font-weight: inherit;
+}
   </style>
  </head>
  <body dir="ltr">
+  <!-- A/B Test Configuration: hero-cta-button-test -->
+  <script>
+    (function() {
+      // A/B Test Configuration
+      var AB_TEST_NAME = 'hero-cta-button-test';
+      var AB_TEST_VARIANTS = ['variant-a', 'variant-b', 'variant-c'];
+
+      // Variant configurations
+      var VARIANT_CONFIG = {
+        'variant-a': {
+          text: 'Go to repository',
+          cssClass: 'cta-variant-a',
+          description: 'Control - Current text with button styling'
+        },
+        'variant-b': {
+          text: 'Get Started',
+          cssClass: 'cta-variant-b',
+          description: 'Prominent button with action-oriented text'
+        },
+        'variant-c': {
+          text: 'Explore Framework',
+          cssClass: 'cta-variant-c',
+          description: 'Descriptive text with teal color scheme'
+        }
+      };
+
+      // Check for forced variant via URL parameter (for testing)
+      var urlParams = new URLSearchParams(window.location.search);
+      var forcedVariant = urlParams.get('ab_variant');
+
+      // Get or set variant from localStorage
+      var selectedVariant = forcedVariant || localStorage.getItem(AB_TEST_NAME);
+
+      if (!selectedVariant || AB_TEST_VARIANTS.indexOf(selectedVariant) === -1) {
+        // Randomly assign variant if not set
+        selectedVariant = AB_TEST_VARIANTS[Math.floor(Math.random() * AB_TEST_VARIANTS.length)];
+        localStorage.setItem(AB_TEST_NAME, selectedVariant);
+      }
+
+      // Store variant assignment
+      window.AB_TEST_VARIANT = selectedVariant;
+      window.AB_TEST_CONFIG = VARIANT_CONFIG[selectedVariant];
+
+      // Log variant assignment (for analytics integration)
+      console.log('[A/B Test] ' + AB_TEST_NAME + ': ' + selectedVariant + ' - ' + VARIANT_CONFIG[selectedVariant].description);
+
+      // Function to apply variant to CTA buttons
+      function applyVariant() {
+        var ctaButtons = document.querySelectorAll('.md-source[data-md-component="source"]');
+
+        ctaButtons.forEach(function(button) {
+          // Add button classes
+          button.classList.add('cta-button', 'cta-' + selectedVariant);
+
+          // Update text content
+          var repoElement = button.querySelector('.md-source__repository');
+          if (repoElement) {
+            repoElement.textContent = window.AB_TEST_CONFIG.text;
+          }
+
+          // Add click tracking
+          button.addEventListener('click', function() {
+            console.log('[A/B Test Click] ' + AB_TEST_NAME + ': ' + selectedVariant);
+
+            // Track click event (integrate with your analytics platform)
+            if (window.gtag) {
+              window.gtag('event', 'ab_test_click', {
+                'test_name': AB_TEST_NAME,
+                'variant': selectedVariant,
+                'button_text': window.AB_TEST_CONFIG.text
+              });
+            }
+
+            // Alternative: Custom event for other analytics platforms
+            var event = new CustomEvent('ab_test_click', {
+              detail: {
+                testName: AB_TEST_NAME,
+                variant: selectedVariant,
+                buttonText: window.AB_TEST_CONFIG.text
+              }
+            });
+            document.dispatchEvent(event);
+          });
+        });
+      }
+
+      // Apply variant when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyVariant);
+      } else {
+        applyVariant();
+      }
+
+      // Expose function to reset test (for testing purposes)
+      window.resetABTest = function() {
+        localStorage.removeItem(AB_TEST_NAME);
+        console.log('[A/B Test] Reset - reload page to see new variant');
+      };
+    })();
+  </script>
   <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox">
   <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox">
   <label class="md-overlay" for="__drawer">
