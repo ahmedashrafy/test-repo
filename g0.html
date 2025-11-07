@@ -608,7 +608,220 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* ============================================================================
+   A/B Test: search-prominence-test
+   Description: Test the impact of making search more prominent
+   Variants: A (control) vs B (prominent search)
+   Metrics: search usage rate, time-to-find-content, bounce rate
+   ============================================================================ */
+
+/* Variant B: Prominent Search Styling */
+body[data-ab-search-prominence="variant-b"] .md-search__input {
+  font-size: 1rem !important;
+  background-color: #e3f2fd !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+@media screen and (min-width:60em) {
+  body[data-ab-search-prominence="variant-b"] .md-search__inner {
+    width: 14rem !important;
+  }
+
+  body[data-ab-search-prominence="variant-b"] [data-md-toggle=search]:checked~.md-header .md-search__inner {
+    width: 36rem !important;
+  }
+
+  body[data-ab-search-prominence="variant-b"] .md-search__form {
+    background-color: #e3f2fd !important;
+  }
+
+  body[data-ab-search-prominence="variant-b"] .md-search__form:hover {
+    background-color: #bbdefb !important;
+  }
+}
+
+/* Variant A: Control (uses existing default styling) */
+body[data-ab-search-prominence="variant-a"] .md-search__input {
+  /* Inherits default styling */
+}
+
   </style>
+  <script>
+    /**
+     * A/B Test: search-prominence-test
+     *
+     * This script assigns users to one of two variants:
+     * - Variant A (control): Default search styling
+     * - Variant B: Prominent search with increased visibility
+     *
+     * Assignment is persistent across sessions using localStorage
+     * and randomly distributed 50/50
+     */
+    (function() {
+      'use strict';
+
+      const TEST_NAME = 'search-prominence-test';
+      const STORAGE_KEY = 'ab_test_' + TEST_NAME;
+      const VARIANTS = ['variant-a', 'variant-b'];
+
+      // Function to get or assign variant
+      function getVariant() {
+        let variant = localStorage.getItem(STORAGE_KEY);
+
+        if (!variant || VARIANTS.indexOf(variant) === -1) {
+          // Assign random variant (50/50 split)
+          variant = VARIANTS[Math.floor(Math.random() * VARIANTS.length)];
+          localStorage.setItem(STORAGE_KEY, variant);
+
+          // Track variant assignment
+          trackEvent('ab_test_assigned', {
+            test_name: TEST_NAME,
+            variant: variant,
+            timestamp: new Date().toISOString()
+          });
+        }
+
+        return variant;
+      }
+
+      // Apply variant to body element
+      const variant = getVariant();
+      document.body.setAttribute('data-ab-search-prominence', variant);
+
+      // Tracking function (placeholder - integrate with your analytics)
+      function trackEvent(eventName, data) {
+        // Log to console for debugging
+        console.log('[A/B Test] ' + eventName, data);
+
+        // TODO: Send to analytics platform (e.g., Google Analytics, Mixpanel)
+        // Example: gtag('event', eventName, data);
+        // Example: mixpanel.track(eventName, data);
+
+        // Store in localStorage for later analysis
+        try {
+          const events = JSON.parse(localStorage.getItem('ab_test_events') || '[]');
+          events.push({
+            event: eventName,
+            data: data,
+            timestamp: new Date().toISOString()
+          });
+          // Keep only last 100 events
+          if (events.length > 100) {
+            events.shift();
+          }
+          localStorage.setItem('ab_test_events', JSON.stringify(events));
+        } catch (e) {
+          console.error('[A/B Test] Failed to store event:', e);
+        }
+      }
+
+      // Track search usage
+      document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('.md-search__input');
+        const searchToggle = document.querySelector('[for="__search"]');
+        let searchStartTime = null;
+        let searchOpened = false;
+
+        if (searchToggle) {
+          searchToggle.addEventListener('click', function() {
+            if (!searchOpened) {
+              searchOpened = true;
+              searchStartTime = Date.now();
+              trackEvent('search_opened', {
+                test_name: TEST_NAME,
+                variant: variant,
+                timestamp: new Date().toISOString()
+              });
+            }
+          });
+        }
+
+        if (searchInput) {
+          // Track when user actually starts searching
+          let typingTimer;
+          searchInput.addEventListener('input', function() {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(function() {
+              if (searchInput.value.length > 0) {
+                trackEvent('search_query_entered', {
+                  test_name: TEST_NAME,
+                  variant: variant,
+                  query_length: searchInput.value.length,
+                  time_to_type: searchStartTime ? Date.now() - searchStartTime : null,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            }, 500);
+          });
+
+          // Track search result clicks (time to find content)
+          const searchResults = document.querySelector('.md-search-result__list');
+          if (searchResults) {
+            searchResults.addEventListener('click', function(e) {
+              if (e.target.closest('.md-search-result__link')) {
+                const timeToFind = searchStartTime ? Date.now() - searchStartTime : null;
+                trackEvent('search_result_clicked', {
+                  test_name: TEST_NAME,
+                  variant: variant,
+                  time_to_find: timeToFind,
+                  timestamp: new Date().toISOString()
+                });
+              }
+            });
+          }
+        }
+
+        // Track page engagement (for bounce rate calculation)
+        let engagementTime = 0;
+        let lastActiveTime = Date.now();
+        let isActive = true;
+
+        // Consider user active when they interact with the page
+        ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(function(event) {
+          document.addEventListener(event, function() {
+            if (!isActive) {
+              isActive = true;
+              lastActiveTime = Date.now();
+            }
+          });
+        });
+
+        // Check for inactivity every second
+        setInterval(function() {
+          if (isActive && Date.now() - lastActiveTime < 30000) { // 30 seconds threshold
+            engagementTime += 1;
+          } else {
+            isActive = false;
+          }
+        }, 1000);
+
+        // Track page unload (bounce rate calculation)
+        window.addEventListener('beforeunload', function() {
+          const bounced = engagementTime < 5; // Consider bounce if less than 5 seconds engagement
+          trackEvent('page_exit', {
+            test_name: TEST_NAME,
+            variant: variant,
+            engagement_time: engagementTime,
+            bounced: bounced,
+            timestamp: new Date().toISOString()
+          });
+        });
+      });
+
+      // Expose API for manual event tracking
+      window.abTest = {
+        getVariant: function() {
+          return variant;
+        },
+        trackEvent: trackEvent,
+        getTestName: function() {
+          return TEST_NAME;
+        }
+      };
+
+    })();
+  </script>
  </head>
  <body dir="ltr">
   <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox">
