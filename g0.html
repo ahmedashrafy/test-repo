@@ -1,4 +1,53 @@
 <!DOCTYPE html>
+<!--
+  ============================================================================
+  A/B TEST CONFIGURATION: navigation-cta-button
+  ============================================================================
+
+  Test Name: navigation-cta-button
+  Description: Test adding a prominent call-to-action button in the header
+               navigation to encourage GitHub engagement
+
+  Hypothesis: Adding a 'Contribute' button next to the GitHub stats will
+              increase repository stars and contributions by making the action
+              more prominent and reducing friction.
+
+  Implementation Details:
+  - Location: Header navigation (lines 690-717)
+  - Button Position: After GitHub repository stats section
+  - Button Text: "Contribute"
+  - Button Style: Uses --md-accent-fg-color background for prominence
+  - Button Link: https://github.com/crosschainriskframework/crosschainriskframework.github.io
+
+  Variants:
+  - Control: Standard header without CTA button (hide element with
+             data-ab-variant="treatment")
+  - Treatment: Header with prominent "Contribute" CTA button (show element)
+
+  Tracking:
+  - Click Events: data-tracking="contribute-cta-click"
+  - Location Tag: data-tracking-location="header-navigation"
+  - Feature Flag: data-ab-test="navigation-cta-button"
+  - Variant Tag: data-ab-variant="treatment"
+
+  Success Metrics:
+  - Primary: Increase in GitHub stars
+  - Secondary: Increase in repository forks
+  - Secondary: Click-through rate on the Contribute button
+  - Secondary: Time to first contribution after clicking
+
+  Implementation Date: 2025-11-07
+  Test Duration: Recommended 2-4 weeks minimum for statistical significance
+
+  Integration Instructions:
+  1. Use the data-ab-test attribute to identify treatment group users
+  2. For control group: set display:none on elements with
+     data-ab-variant="treatment"
+  3. Track clicks via data-tracking attributes in your analytics system
+  4. Measure GitHub API for stars/forks changes correlated with user segments
+
+  ============================================================================
+-->
 <html class="js-focus-visible js" data-js-focus-visible lang="en">
  <head>
   <meta charset="utf-8">
@@ -687,6 +736,34 @@
       </div>
      </a>
     </div>
+    <!-- A/B Test: navigation-cta-button -->
+    <!-- Variant: Shows prominent "Contribute" CTA button in header -->
+    <!-- Control: This section is hidden for control group -->
+    <!-- Feature Flag: data-ab-test="navigation-cta-button" -->
+    <div class="md-header__contribute" data-ab-test="navigation-cta-button" data-ab-variant="treatment" style="display: flex; align-items: center; margin-left: 0.8rem;">
+     <a href="https://github.com/crosschainriskframework/crosschainriskframework.github.io"
+        class="md-button md-button--primary"
+        data-tracking="contribute-cta-click"
+        data-tracking-location="header-navigation"
+        style="
+          background-color: var(--md-accent-fg-color);
+          color: var(--md-accent-bg-color);
+          border-radius: 0.1rem;
+          padding: 0.5em 1.2em;
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-decoration: none;
+          display: inline-block;
+          transition: background-color 0.25s, box-shadow 0.25s;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        "
+        onmouseover="this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)'; this.style.transform='translateY(-1px)';"
+        onmouseout="this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)'; this.style.transform='translateY(0)';"
+        title="Contribute to the project on GitHub">
+      Contribute
+     </a>
+    </div>
+    <!-- End A/B Test: navigation-cta-button -->
    </nav>
   </header>
   <div class="md-container" data-md-component="container">
