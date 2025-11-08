@@ -987,5 +987,152 @@
    <div class="md-dialog__inner md-typeset">
    </div>
   </div>
+
+  <!-- A/B Test: hero-cta-variation -->
+  <script>
+    (function() {
+      'use strict';
+
+      /**
+       * A/B Test Configuration
+       * Test: hero-cta-variation
+       * Purpose: Test different call-to-action button text and styling in the documentation header
+       * Variants:
+       *   - A (control): 'View on GitHub' with default styling
+       *   - B (treatment): 'Explore Framework' with primary blue color scheme
+       */
+
+      // Check if user already has a variant assigned
+      var AB_TEST_NAME = 'hero-cta-variation';
+      var STORAGE_KEY = 'ab_test_' + AB_TEST_NAME;
+      var variant = localStorage.getItem(STORAGE_KEY);
+
+      // If no variant assigned, randomly assign one (50/50 split)
+      if (!variant) {
+        variant = Math.random() < 0.5 ? 'A' : 'B';
+        localStorage.setItem(STORAGE_KEY, variant);
+      }
+
+      // Log variant assignment for analytics
+      if (window.console) {
+        console.log('[A/B Test] ' + AB_TEST_NAME + ' - Assigned variant: ' + variant);
+      }
+
+      // Send analytics event for variant assignment
+      function trackEvent(eventName, properties) {
+        // Generic analytics tracking function
+        // Integrates with common analytics platforms (Google Analytics, Mixpanel, etc.)
+        if (typeof gtag !== 'undefined') {
+          gtag('event', eventName, properties);
+        }
+        if (typeof mixpanel !== 'undefined') {
+          mixpanel.track(eventName, properties);
+        }
+        if (window.console) {
+          console.log('[Analytics] ' + eventName, properties);
+        }
+      }
+
+      // Track variant view
+      trackEvent('ab_test_view', {
+        test_name: AB_TEST_NAME,
+        variant: variant,
+        timestamp: new Date().toISOString()
+      });
+
+      // Apply variant styling
+      function applyVariant() {
+        var sourceLink = document.querySelector('.md-header__source .md-source');
+
+        if (!sourceLink) {
+          // Retry after DOM is fully loaded
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', applyVariant);
+          }
+          return;
+        }
+
+        if (variant === 'B') {
+          // Variant B: Change to "Explore Framework" with primary blue styling
+
+          // Update text content
+          var repoText = sourceLink.querySelector('.md-source__repository');
+          if (repoText) {
+            repoText.childNodes[0].textContent = 'Explore Framework';
+          }
+
+          // Add custom styling for variant B
+          var style = document.createElement('style');
+          style.id = 'ab-test-variant-b-styles';
+          style.textContent = `
+            /* A/B Test Variant B: Primary Blue Color Scheme */
+            .md-header__source .md-source[data-ab-variant="B"] {
+              background-color: var(--md-primary-fg-color);
+              border-radius: 0.2rem;
+              padding: 0.3rem 0.6rem;
+              transition: background-color 0.25s, transform 0.25s;
+            }
+
+            .md-header__source .md-source[data-ab-variant="B"]:hover {
+              background-color: var(--md-accent-fg-color);
+              transform: translateY(-2px);
+            }
+
+            .md-header__source .md-source[data-ab-variant="B"] .md-source__repository {
+              color: var(--md-primary-bg-color);
+              font-weight: 700;
+            }
+
+            .md-header__source .md-source[data-ab-variant="B"] .md-source__icon svg {
+              fill: var(--md-primary-bg-color);
+            }
+
+            .md-header__source .md-source[data-ab-variant="B"] .md-source__facts {
+              display: none;
+            }
+          `;
+          document.head.appendChild(style);
+
+          // Mark element with variant attribute
+          sourceLink.setAttribute('data-ab-variant', 'B');
+        } else {
+          // Variant A: Keep existing styling, just mark for tracking
+          sourceLink.setAttribute('data-ab-variant', 'A');
+        }
+
+        // Add click tracking
+        sourceLink.addEventListener('click', function(e) {
+          trackEvent('ab_test_cta_click', {
+            test_name: AB_TEST_NAME,
+            variant: variant,
+            button_text: variant === 'A' ? 'View on GitHub' : 'Explore Framework',
+            timestamp: new Date().toISOString()
+          });
+        });
+      }
+
+      // Initialize variant application
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyVariant);
+      } else {
+        applyVariant();
+      }
+
+      // Expose API for external analytics/debugging
+      window.ABTest = window.ABTest || {};
+      window.ABTest[AB_TEST_NAME] = {
+        variant: variant,
+        getVariant: function() { return variant; },
+        trackClick: function() {
+          trackEvent('ab_test_cta_click', {
+            test_name: AB_TEST_NAME,
+            variant: variant,
+            button_text: variant === 'A' ? 'View on GitHub' : 'Explore Framework',
+            timestamp: new Date().toISOString()
+          });
+        }
+      };
+    })();
+  </script>
  </body>
 </html>
