@@ -608,9 +608,82 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* A/B Test: hero-cta-button - Prominent CTA button in introduction section */
+/* Variant A: No CTA button (original) */
+/* Variant B: CTA button present (controlled by data-ab-test attribute) */
+.hero-cta-button {
+  display: inline-block;
+  padding: 12px 32px;
+  margin: 24px 0;
+  background: linear-gradient(135deg, #4051b5 0%, #526cfe 100%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(64, 81, 181, 0.3);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.hero-cta-button:hover {
+  background: linear-gradient(135deg, #303fa1 0%, #4051b5 100%);
+  box-shadow: 0 6px 12px rgba(64, 81, 181, 0.4);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+.hero-cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(64, 81, 181, 0.3);
+}
+
+/* Hide CTA button by default (Variant A) */
+.hero-cta-button {
+  display: none;
+}
+
+/* Show CTA button when A/B test variant B is active */
+[data-ab-test-hero-cta="variant-b"] .hero-cta-button {
+  display: inline-block;
+}
   </style>
  </head>
- <body dir="ltr">
+ <!--
+ ============================================================================
+ A/B TEST: hero-cta-button
+ ============================================================================
+ Description: Tests the impact of adding a prominent call-to-action button
+              in the introduction section to increase engagement with the
+              security risks section of the documentation.
+
+ Variants:
+   - Variant A (Control): No CTA button displayed (original behavior)
+     Set: data-ab-test-hero-cta="variant-a" or remove the attribute
+
+   - Variant B (Treatment): CTA button displayed after introduction
+     Set: data-ab-test-hero-cta="variant-b" on the <body> tag
+
+ Implementation:
+   - Button location: After introductory paragraphs (around line 840)
+   - Button text: "Explore Security Risks →"
+   - Button action: Scrolls to #security-risks section
+   - Tracking: Google Analytics event tracking via onclick handler
+
+ Metrics to Track:
+   - Click-through rate on CTA button
+   - Scroll depth to security risks section
+   - Time spent on page
+   - Bounce rate comparison between variants
+
+ To Switch Variants:
+   Change the data-ab-test-hero-cta attribute on the <body> tag below:
+   - For Variant A: data-ab-test-hero-cta="variant-a" or remove attribute
+   - For Variant B: data-ab-test-hero-cta="variant-b"
+ ============================================================================
+ -->
+ <body dir="ltr" data-ab-test-hero-cta="variant-b">
   <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox">
   <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox">
   <label class="md-overlay" for="__drawer">
@@ -796,6 +869,21 @@
        <p>
         While this document is still a work in progress, its ultimate objective is to enable progress toward more secure, robust, and decentralized crosschain protocols that can serve as solid foundations for a multichain future. We highly encourage contributions and feedback from the community towards this end.
        </p>
+
+       <!-- A/B Test: hero-cta-button (Variant B) -->
+       <div style="text-align: center; margin: 32px 0;">
+        <a href="#security-risks"
+           class="hero-cta-button"
+           data-ab-test="hero-cta-button"
+           data-ab-variant="b"
+           data-track-event="cta-click"
+           data-track-location="introduction"
+           onclick="if(window.gtag){gtag('event', 'cta_click', {'event_category': 'engagement', 'event_label': 'hero_cta_security_risks', 'ab_test': 'hero-cta-button', 'variant': 'b'});}"
+           aria-label="Learn more about security risks in crosschain protocols">
+          Explore Security Risks →
+        </a>
+       </div>
+
        <h2 id="types-of-crosschain-interaction">
         Types of Crosschain Interaction
        </h2>
