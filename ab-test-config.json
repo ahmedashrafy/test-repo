@@ -1,0 +1,50 @@
+{
+  "test_name": "hero-cta-variation",
+  "description": "Test different call-to-action button text and styling in the documentation header to improve user engagement",
+  "status": "active",
+  "created_date": "2025-11-08",
+  "variants": {
+    "A": {
+      "name": "control",
+      "description": "Original 'View on GitHub' button with default styling",
+      "button_text": "GitHub",
+      "styling": "default",
+      "traffic_allocation": 0.5
+    },
+    "B": {
+      "name": "treatment",
+      "description": "New 'Explore Framework' button with primary blue color scheme",
+      "button_text": "Explore Framework",
+      "styling": "primary_blue",
+      "traffic_allocation": 0.5
+    }
+  },
+  "metrics": {
+    "primary": {
+      "name": "click_through_rate",
+      "description": "Percentage of users who click the CTA button",
+      "event": "ab_test_cta_click"
+    },
+    "secondary": [
+      {
+        "name": "time_to_click",
+        "description": "Time between page load and CTA click"
+      },
+      {
+        "name": "bounce_rate",
+        "description": "Percentage of users who leave without interacting"
+      }
+    ]
+  },
+  "tracking": {
+    "view_event": "ab_test_view",
+    "click_event": "ab_test_cta_click",
+    "storage_key": "ab_test_hero-cta-variation"
+  },
+  "hypothesis": "Changing the button text from 'View on GitHub' to 'Explore Framework' with a more prominent primary blue color scheme will increase user engagement and click-through rates by making the CTA more action-oriented and visually distinct.",
+  "success_criteria": {
+    "minimum_sample_size": 1000,
+    "confidence_level": 0.95,
+    "minimum_detectable_effect": 0.05
+  }
+}
