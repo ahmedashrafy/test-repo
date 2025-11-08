@@ -608,6 +608,51 @@
 
 
 :root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}
+
+/* BEGIN A/B TEST: cta-button-visibility - Styling for header CTA button */
+.md-header__cta {
+  display: flex;
+  align-items: center;
+  margin-left: 1rem;
+}
+
+.md-header__cta-button {
+  background-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.25s, transform 0.15s, box-shadow 0.25s;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.md-header__cta-button:hover {
+  background-color: var(--md-primary-fg-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.md-header__cta-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide CTA button on smaller screens to prevent header crowding */
+@media screen and (max-width: 76.234375em) {
+  .md-header__cta {
+    display: none;
+  }
+}
+
+/* Analytics tracking attribute for A/B test measurement */
+[data-ab-test="cta-button-visibility"] {
+  /* Add tracking via data attributes for click events and engagement metrics */
+}
+/* END A/B TEST: cta-button-visibility */
+
   </style>
  </head>
  <body dir="ltr">
@@ -687,6 +732,14 @@
       </div>
      </a>
     </div>
+    <!-- BEGIN A/B TEST: cta-button-visibility -->
+    <!-- Test: Adding prominent CTA button in header to improve engagement -->
+    <div class="md-header__cta" data-ab-test="cta-button-visibility">
+     <a class="md-header__cta-button" href="#introduction" title="Get Started with Crosschain Risk Framework">
+      Get Started
+     </a>
+    </div>
+    <!-- END A/B TEST: cta-button-visibility -->
    </nav>
   </header>
   <div class="md-container" data-md-component="container">
